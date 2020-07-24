@@ -1,17 +1,26 @@
 import 'dart:collection';
+import 'dart:io';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:googlemaps/Provider/AddFlagProvider.dart';
 import 'package:googlemaps/Provider/UserProvider.dart';
 import 'package:googlemaps/Screens/addflag.dart';
-import 'package:googlemaps/Screens/explore.dart';
+import 'package:firebase_storage/firebase_storage.dart'; // For File Upload To Firestore
+import 'package:googlemaps/Widgets/LocationStack.dart';
+import 'package:googlemaps/Widgets/pickImageDialog.dart';
+import 'package:image_picker/image_picker.dart'; // For Image Picker
+
 import 'package:googlemaps/Screens/favorite.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:googlemaps/Screens/profile.dart';
@@ -21,8 +30,12 @@ import 'package:googlemaps/Widgets/home_user_pointes.dart';
 import 'package:googlemaps/constants.dart';
 import 'package:googlemaps/custom_icons/custom_icons.dart';
 import 'package:googlemaps/models/Markers.dart';
+import 'package:like_button/like_button.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:googlemaps/servecies/store.dart';
+import 'package:googlemaps/Screens/waitingWidget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class home extends StatefulWidget {
   @override
@@ -59,13 +72,13 @@ class _homeState extends State<home> {
   static LatLng _lastMapPosition =
       LatLng(30.04578362730974, 31.201951056718826);
 
-  void setMarkerIcon() async {
-    markericon = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(
-          size: Size(1, 1),
-        ),
-        "images/image2.png");
-  }
+//  void setMarkerIcon() async {
+//    markericon = await BitmapDescriptor.fromAssetImage(
+//        ImageConfiguration(
+//        size: Size(12,12)
+//        ),
+//        "images/marker.png");
+//  }
 
   getposition() async {
     position = await Geolocator()
@@ -76,30 +89,87 @@ class _homeState extends State<home> {
     });
   }
 
-  bool _checkConfiguration() => true;
+  @override
   void initState() {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (Provider.of<UserProvider>(context,listen:false).scores!=0){
+        await showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => new AlertDialog(
+            content: Container(
+              height: MediaQuery.of(context).size.height*0.17,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical:12.0),
+                    child: Container(
+                        height:  MediaQuery.of(context).size.height*0.04,
+                        width:  MediaQuery.of(context).size.width*0.04,
+                        child: Icon(Custom_icons.coins,color: constants.primarycolor,size: 40,)),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(3.0),
+                    child: new Text("Congratulations",style: TextStyle(fontFamily: 'font',fontWeight: FontWeight.bold),),
+                  ),
+                  Container(child: Text("You Get New +${Provider.of<UserProvider>(context,listen:false).scores} Point"))
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+        Provider.of<UserProvider>(context).setScores(0);
+      }
+
+    });
     // TODO: implement initState
     super.initState();
-    setMarkerIcon();
-//    if (_checkConfiguration()) {
-//      Future.delayed(Duration.zero,() {
-//
-//    }
-//    }
+    BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(size: Size(48, 48)), 'custom_icons/marker.png')
+        .then((onValue) {
+      markericon = onValue;
+  });
+    sharedpref();
   }
+
+
+  double counter;
+  bool clickable;
+  sharedpref()async{
+    final prefs = await SharedPreferences.getInstance();
+   counter = prefs.getDouble('counter') ?? 0;
+    clickable = prefs.getBool('clickable') ?? true;
+
+  }
+
 
   Set<Marker> markers = HashSet<Marker>();
   GoogleMapController googleMapController;
 
   String search;
+  bool isLike;
+
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     String username = Provider.of<UserProvider>(context).UserName;
+    var userprovider = Provider.of<UserProvider>(context);
     int collectedpointes = Provider.of<UserProvider>(context).Scores;
+
     Store store = Store();
-    List<MarkerComments> markercomments;
+    List<MarkerComments> markercomments=[];
+    String urlLoad =
+        'https://firebasestorage.googleapis.com/v0/b/double-zenith-280321.appspot.com/o/images%2Fheader%20bg.png?alt=media&token=2a399258-a53e-4ceb-99e8-0e151e9c05fa';
     return Material(
       child: Scaffold(
         appBar: AppBar(
@@ -120,6 +190,7 @@ class _homeState extends State<home> {
             stream: store.MarkersStream(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
+
                 for (var doc in snapshot.data.documents) {
                   var data = doc.data;
 
@@ -128,10 +199,13 @@ class _homeState extends State<home> {
                   double long = geoPoint.longitude;
                   LatLng latLng = LatLng(lat, long);
                   markers.add(Marker(
+
                       infoWindow: InfoWindow(
                           title: data[constants.placeName],
-                          snippet: "",
+                          snippet: 'Click to Show More Information',
+
                           onTap: () {
+
                             showModalBottomSheet(
                                 elevation: 1,
                                 isScrollControlled: true,
@@ -162,218 +236,573 @@ class _homeState extends State<home> {
                                               data[constants.Question11],
                                               data[constants.Question12],
                                               data[constants.Question13],
-                                              data[constants.Question14],
                                               data[constants.placeRate],
+                                              data[constants.Value4],
+                                              data[constants.Value5],
+                                              data[constants.Value6],
+                                              data[constants.Value7],
+                                              data[constants.Value8],
+                                              data[constants.Value9],
+                                              data[constants.Value10],
+                                              data[constants.Value11],
+                                              data[constants.Value12],
+                                              data[constants.Value13],
                                             ));
                                           }
+                                          getCartTotal(
+                                              doc.documentID.toString());
                                         }
-                                        return StreamBuilder(
-                                          stream: store.UserInfowithid(
-                                              markercomments[0].owneruid),
-                                          builder: (context, snapshot) =>
-                                              Container(
-                                                  height: MediaQuery.of(context)
-                                                          .size
-                                                          .height *
-                                                      0.98,
-                                                  color: Colors.white,
-                                                  child: Scaffold(
-                                                    appBar: AppBar(
-                                                      elevation: 1,
-                                                      centerTitle: true,
-                                                      backgroundColor:
-                                                          constants.whitecolor,
-                                                      title: Text(
-                                                        "Do You Love This Place?",
-                                                        style: TextStyle(
-                                                            fontFamily: 'font',
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: constants
-                                                                .blackcolor),
-                                                      ),
-                                                    ),
-                                                    floatingActionButton:
-                                                        FloatingActionButton
-                                                            .extended(
-                                                      onPressed: () {
-                                                        Navigator.of(context).push(
-                                                            MaterialPageRoute(
-                                                                builder:
-                                                                    (context) =>
-                                                                        addQuestions()));
-                                                      },
-                                                      label: Text(
-                                                          "Add Your Answers now!"),
-                                                      backgroundColor: constants
-                                                          .primarycolor,
-                                                    ),
-                                                    floatingActionButtonLocation:
-                                                        FloatingActionButtonLocation
-                                                            .centerFloat,
-                                                    body: Container(
-                                                      child: Column(
-                                                        children: <Widget>[
-                                                          Container(
-                                                            width:
-                                                                MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .width,
-                                                            height: MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .height *
-                                                                0.07,
-                                                            color: constants
-                                                                .primarycolor,
-                                                            child: Center(
-                                                              child: Padding(
-                                                                padding: const EdgeInsets
-                                                                        .symmetric(
-                                                                    horizontal:
-                                                                        10,
-                                                                    vertical:
-                                                                        10),
-                                                                child:
-                                                                    AutoSizeText(
-                                                                  data[constants
-                                                                      .placeName],
+                                              return  StreamBuilder(
+                                                    stream:
+                                                    store.favouriteLike(
+                                                        markercomments[0]
+                                                            .owneruid),
+                                                    builder:
+                                                        (context, snapshot) {
+                                                      if (snapshot.hasData) {
+                                                        return Container(
+                                                            height: MediaQuery
+                                                                .of(
+                                                                context)
+                                                                .size
+                                                                .height *
+                                                                0.98,
+                                                            color:
+                                                            Colors.white,
+                                                            child: Scaffold(
+                                                              appBar: AppBar(
+                                                                elevation: 1,
+                                                                centerTitle:
+                                                                true,
+                                                                backgroundColor:
+                                                                constants
+                                                                    .whitecolor,
+                                                                title: Text(
+                                                                  "Do You Love This Place?",
                                                                   style: TextStyle(
                                                                       fontFamily:
-                                                                          'font',
+                                                                      'font',
+                                                                      fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
                                                                       color: constants
-                                                                          .whitecolor),
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .center,
-                                                                  softWrap:
-                                                                      true,
-                                                                  wrapWords:
-                                                                      true,
+                                                                          .blackcolor),
                                                                 ),
                                                               ),
-                                                            ),
-                                                          ),
-                                                          Container(
-                                                            height:
-                                                                height * 0.25,
-                                                            width: width,
-                                                            child: Image.asset(
-                                                              "images/markercover.png",
-                                                              fit: BoxFit.cover,
-                                                            ),
-                                                          ),
-                                                          Container(
-                                                            height:
-                                                                height * 0.15,
-                                                            width: width,
-                                                            child: GoogleMap(
-                                                              mapType: MapType
-                                                                  .normal,
-                                                              markers: markers,
-                                                              onMapCreated:
-                                                                  _OnMapCreated,
-                                                              initialCameraPosition:
-                                                                  CameraPosition(
-                                                                      bearing:
-                                                                          180,
-                                                                      target:
-                                                                          latLng,
-                                                                      zoom: 17),
-                                                            ),
-                                                          ),
-                                                          Expanded(
-                                                            child: Container(
-                                                              height:
-                                                                  height * 0.2,
-                                                              width: width,
-                                                              child: ListView
-                                                                  .builder(
-                                                                      itemCount:
-                                                                          markercomments
-                                                                              .length,
-                                                                      itemBuilder: (context,
-                                                                              index) =>
-                                                                          Container(
-                                                                            child:
-                                                                                Padding(
-                                                                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                                                                              child: Container(
-                                                                                height: height * 0.2,
-                                                                                width: width * 0.9,
-                                                                                color: Colors.white,
-                                                                                child: Row(
-                                                                                  children: <Widget>[
-                                                                                    Container(
-                                                                                      alignment: Alignment.topRight,
-                                                                                      height: height * 0.2,
-                                                                                      width: width * 0.17,
-                                                                                      color: Colors.white,
-                                                                                      child: SvgPicture.asset("images/profile.svg"),
-                                                                                    ),
-                                                                                    Padding(
-                                                                                      padding: const EdgeInsets.all(12.0),
-                                                                                      child: Column(
-                                                                                        children: <Widget>[
-                                                                                          Row(
-                                                                                            children: <Widget>[
-                                                                                              Text(
-                                                                                                snapshot.hasData == false ? "User Name" : "${snapshot.data.documents[0][constants.username]}",
-                                                                                                style: TextStyle(fontFamily: 'font'),
-                                                                                              ),
-                                                                                              Text(
-                                                                                                snapshot.hasData == false ? "User Name" : "   (${snapshot.data.documents[0][constants.score]} Point)",
-                                                                                                style: TextStyle(fontFamily: 'font', fontWeight: FontWeight.bold),
-                                                                                                softWrap: true,
-                                                                                                maxLines: 1,
-                                                                                              )
-                                                                                            ],
-                                                                                          ),
-                                                                                          SizedBox(
-                                                                                            height: height * 0.01,
-                                                                                          ),
-                                                                                          AutoSizeText(
-                                                                                            "Answers : ",
-                                                                                            style: TextStyle(fontFamily: 'font'),
-                                                                                            softWrap: true,
-                                                                                            maxLines: 1,
-                                                                                          ),
-                                                                                          SizedBox(
-                                                                                            height: height * 0.01,
-                                                                                          ),
-                                                                                          AutoSizeText(
-                                                                                            "What do you do in this place ? ",
-                                                                                            style: TextStyle(fontFamily: 'font', fontWeight: FontWeight.bold),
-                                                                                            softWrap: true,
-                                                                                            maxLines: 1,
-                                                                                          ),
-                                                                                          Text(snapshot.hasData == false ? "" : markercomments[index].Question1, style: TextStyle(fontFamily: 'font')),
-                                                                                          SizedBox(
-                                                                                            height: height * 0.01,
-                                                                                          ),
-                                                                                          AutoSizeText(
-                                                                                            "When do you go to those places?",
-                                                                                            style: TextStyle(fontFamily: 'font', fontWeight: FontWeight.bold),
-                                                                                            softWrap: true,
-                                                                                            maxLines: 1,
-                                                                                          ),
-                                                                                          Text(snapshot.hasData == false ? "" : markercomments[index].Question2, style: TextStyle(fontFamily: 'font'))
-                                                                                        ],
+                                                              floatingActionButton:
+                                                              FloatingActionButton
+                                                                  .extended(
+                                                                onPressed:
+                                                                    () {
+                                                                  Navigator.of(
+                                                                      context)
+                                                                      .push(
+                                                                      MaterialPageRoute(
+                                                                          builder: (
+                                                                              context) =>
+                                                                              addQuestions(
+                                                                                  doc
+                                                                                      .documentID
+                                                                                      .toString())));
+                                                                },
+                                                                label: Text(
+                                                                    "Add Your Answers now!"),
+                                                                backgroundColor:
+                                                                constants
+                                                                    .primarycolor,
+                                                              ),
+                                                              floatingActionButtonLocation:
+                                                              FloatingActionButtonLocation
+                                                                  .centerFloat,
+                                                              body: Container(
+                                                                child: Column(
+                                                                  children: <
+                                                                      Widget>[
+                                                                    Container(
+                                                                      width: MediaQuery
+                                                                          .of(
+                                                                          context)
+                                                                          .size
+                                                                          .width,
+                                                                      height: MediaQuery
+                                                                          .of(
+                                                                          context)
+                                                                          .size
+                                                                          .height *
+                                                                          0.07,
+                                                                      color: constants
+                                                                          .primarycolor,
+                                                                      child:
+                                                                      Center(
+                                                                        child:
+                                                                        Padding(
+                                                                          padding:
+                                                                          const EdgeInsets
+                                                                              .symmetric(
+                                                                              horizontal: 10,
+                                                                              vertical: 10),
+                                                                          child:
+                                                                          AutoSizeText(
+                                                                            data["${constants
+                                                                                .placeName}"] ==
+                                                                                null
+                                                                                ? ""
+                                                                                : data["${constants
+                                                                                .placeName}"],
+                                                                            style: TextStyle(
+                                                                                fontFamily: 'font',
+                                                                                color: constants
+                                                                                    .whitecolor),
+                                                                            textAlign: TextAlign
+                                                                                .center,
+                                                                            softWrap: true,
+                                                                            wrapWords: true,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    LocationStack(
+                                                                      height:
+                                                                      height,
+                                                                      width:
+                                                                      width,
+                                                                      data:
+                                                                      data,
+                                                                      urlLoad:
+                                                                      urlLoad,
+                                                                      docId:
+                                                                      doc
+                                                                          .documentID
+                                                                          .toString(),
+                                                                      store:
+                                                                      store,
+                                                                      liked: snapshot
+                                                                          .data
+                                                                          .documents[0][constants
+                                                                          .IsFavourite],
+                                                                      placeName: data["${constants
+                                                                          .placeName}"],
+                                                                      location: data[constants
+                                                                          .Location],
+                                                                    ),
+                                                                    Container(
+                                                                      height: height *
+                                                                          0.15,
+                                                                      width:
+                                                                      width,
+                                                                      child:
+                                                                      GoogleMap(
+                                                                        mapType:
+                                                                        MapType
+                                                                            .normal,
+                                                                        markers:
+                                                                        markers,
+                                                                        onMapCreated:
+                                                                        _OnMapCreated,
+                                                                        initialCameraPosition: CameraPosition(
+                                                                            bearing: 180,
+                                                                            target: latLng,
+                                                                            zoom: 17),
+                                                                      ),
+                                                                    ),
+                                                                    Expanded(
+                                                                      child:
+                                                                      Padding(
+                                                                        padding:
+                                                                        const EdgeInsets
+                                                                            .all(
+                                                                            15.0),
+                                                                        child: Container(
+                                                                            height: height *
+                                                                                0.2,
+                                                                            width: width,
+                                                                            child: Container(
+                                                                              child: Column(
+                                                                                children: <
+                                                                                    Widget>[
+                                                                                  Row(
+                                                                                    mainAxisAlignment: MainAxisAlignment
+                                                                                        .spaceBetween,
+                                                                                    children: <
+                                                                                        Widget>[
+                                                                                      Text(
+                                                                                          'Peer Relationships',
+                                                                                          style: TextStyle(
+                                                                                              fontFamily: 'font')),
+                                                                                      new LinearPercentIndicator(
+                                                                                        width: 140.0,
+                                                                                        lineHeight: 14.0,
+                                                                                        percent: ((Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage4with12percent) ==
+                                                                                            null
+                                                                                            ? 0
+                                                                                            : (Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage4with12percent)),
+                                                                                        center: Text(
+                                                                                          "${(Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage4with12 ==
+                                                                                              null
+                                                                                              ? 0
+                                                                                              : ((Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage4with12)))}%",
+                                                                                          style: new TextStyle(
+                                                                                              fontSize: 12.0),
+                                                                                        ),
+                                                                                        trailing: Icon(
+                                                                                            Icons
+                                                                                                .mood),
+                                                                                        linearStrokeCap: LinearStrokeCap
+                                                                                            .roundAll,
+                                                                                        backgroundColor: Colors
+                                                                                            .grey,
+                                                                                        progressColor: constants
+                                                                                            .primarycolor,
                                                                                       ),
-                                                                                    )
-                                                                                  ],
-                                                                                ),
+                                                                                    ],
+                                                                                  ),
+                                                                                  Row(
+                                                                                    mainAxisAlignment: MainAxisAlignment
+                                                                                        .spaceBetween,
+                                                                                    children: <
+                                                                                        Widget>[
+                                                                                      Text(
+                                                                                          'Sense of freedom',
+                                                                                          style: TextStyle(
+                                                                                              fontFamily: 'font')),
+                                                                                      new LinearPercentIndicator(
+                                                                                        width: 140.0,
+                                                                                        lineHeight: 14.0,
+                                                                                        percent: ((Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage5with6percent) ==
+                                                                                            null
+                                                                                            ? 0
+                                                                                            : (Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage5with6percent)),
+                                                                                        center: Text(
+                                                                                          "${(Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage5with6 ==
+                                                                                              null
+                                                                                              ? 0
+                                                                                              : (Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage5with6))}%",
+                                                                                          style: new TextStyle(
+                                                                                              fontSize: 12.0),
+                                                                                        ),
+                                                                                        trailing: Icon(
+                                                                                            Icons
+                                                                                                .mood),
+                                                                                        linearStrokeCap: LinearStrokeCap
+                                                                                            .roundAll,
+                                                                                        backgroundColor: Colors
+                                                                                            .grey,
+                                                                                        progressColor: constants
+                                                                                            .primarycolor,
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                  Row(
+                                                                                    mainAxisAlignment: MainAxisAlignment
+                                                                                        .spaceBetween,
+                                                                                    children: <
+                                                                                        Widget>[
+                                                                                      Text(
+                                                                                          'Safety',
+                                                                                          style: TextStyle(
+                                                                                              fontFamily: 'font')),
+                                                                                      new LinearPercentIndicator(
+                                                                                        width: 140.0,
+                                                                                        lineHeight: 14.0,
+                                                                                        percent: Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage7percent ==
+                                                                                            null
+                                                                                            ? 0
+                                                                                            : Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage7percent,
+                                                                                        center: Text(
+                                                                                          "${Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage7 ==
+                                                                                              null
+                                                                                              ? 0
+                                                                                              : Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage7}%",
+                                                                                          style: new TextStyle(
+                                                                                              fontSize: 12.0),
+                                                                                        ),
+                                                                                        trailing: Icon(
+                                                                                            Icons
+                                                                                                .mood),
+                                                                                        linearStrokeCap: LinearStrokeCap
+                                                                                            .roundAll,
+                                                                                        backgroundColor: Colors
+                                                                                            .grey,
+                                                                                        progressColor: constants
+                                                                                            .primarycolor,
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                  Row(
+                                                                                    mainAxisAlignment: MainAxisAlignment
+                                                                                        .spaceBetween,
+                                                                                    children: <
+                                                                                        Widget>[
+                                                                                      Text(
+                                                                                          'Self expression',
+                                                                                          style: TextStyle(
+                                                                                              fontFamily: 'font')),
+                                                                                      new LinearPercentIndicator(
+                                                                                        width: 140.0,
+                                                                                        lineHeight: 14.0,
+                                                                                        percent: ((Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage8with10percent) ==
+                                                                                            null
+                                                                                            ? 0
+                                                                                            : (Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage8with10percent)),
+                                                                                        center: Text(
+                                                                                          "${(Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage8with10 ==
+                                                                                              null
+                                                                                              ? 0
+                                                                                              : (Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage8with10))}%",
+                                                                                          style: new TextStyle(
+                                                                                              fontSize: 12.0),
+                                                                                        ),
+                                                                                        trailing: Icon(
+                                                                                            Icons
+                                                                                                .mood),
+                                                                                        linearStrokeCap: LinearStrokeCap
+                                                                                            .roundAll,
+                                                                                        backgroundColor: Colors
+                                                                                            .grey,
+                                                                                        progressColor: constants
+                                                                                            .primarycolor,
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                  Row(
+                                                                                    mainAxisAlignment: MainAxisAlignment
+                                                                                        .spaceBetween,
+                                                                                    children: <
+                                                                                        Widget>[
+                                                                                      Text(
+                                                                                          'Enjoyment',
+                                                                                          style: TextStyle(
+                                                                                              fontFamily: 'font')),
+                                                                                      new LinearPercentIndicator(
+                                                                                        width: 140.0,
+                                                                                        lineHeight: 14.0,
+                                                                                        percent: Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage9percent ==
+                                                                                            null
+                                                                                            ? 0
+                                                                                            : Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage9percent,
+                                                                                        center: Text(
+                                                                                          "${Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage9 ==
+                                                                                              null
+                                                                                              ? 0
+                                                                                              : Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage9}%",
+                                                                                          style: new TextStyle(
+                                                                                              fontSize: 12.0),
+                                                                                        ),
+                                                                                        trailing: Icon(
+                                                                                            Icons
+                                                                                                .mood),
+                                                                                        linearStrokeCap: LinearStrokeCap
+                                                                                            .roundAll,
+                                                                                        backgroundColor: Colors
+                                                                                            .grey,
+                                                                                        progressColor: constants
+                                                                                            .primarycolor,
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                  Row(
+                                                                                    mainAxisAlignment: MainAxisAlignment
+                                                                                        .spaceBetween,
+                                                                                    children: <
+                                                                                        Widget>[
+                                                                                      Text(
+                                                                                          'Acceptance',
+                                                                                          style: TextStyle(
+                                                                                              fontFamily: 'font')),
+                                                                                      new LinearPercentIndicator(
+                                                                                        width: 140.0,
+                                                                                        lineHeight: 14.0,
+                                                                                        percent: Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage11percent ==
+                                                                                            null
+                                                                                            ? 0
+                                                                                            : Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage11percent,
+                                                                                        center: Text(
+                                                                                          "${Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage11 ==
+                                                                                              null
+                                                                                              ? 0
+                                                                                              : Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage11}%",
+                                                                                          style: new TextStyle(
+                                                                                              fontSize: 12.0),
+                                                                                        ),
+                                                                                        trailing: Icon(
+                                                                                            Icons
+                                                                                                .mood),
+                                                                                        linearStrokeCap: LinearStrokeCap
+                                                                                            .roundAll,
+                                                                                        backgroundColor: Colors
+                                                                                            .grey,
+                                                                                        progressColor: constants
+                                                                                            .primarycolor,
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                  Row(
+                                                                                    mainAxisAlignment: MainAxisAlignment
+                                                                                        .spaceBetween,
+                                                                                    children: <
+                                                                                        Widget>[
+                                                                                      Text(
+                                                                                        'variety',
+                                                                                        style: TextStyle(
+                                                                                            fontFamily: 'font'),
+                                                                                      ),
+                                                                                      new LinearPercentIndicator(
+                                                                                        width: 140.0,
+                                                                                        lineHeight: 14.0,
+                                                                                        percent: Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage13percent ==
+                                                                                            null
+                                                                                            ? 0
+                                                                                            : Provider
+                                                                                            .of<
+                                                                                            Addflagprovider>(
+                                                                                            context)
+                                                                                            .valuePrecentage13percent,
+                                                                                        center: Text(
+                                                                                          "${Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage13 ==
+                                                                                              null
+                                                                                              ? 0
+                                                                                              : Provider
+                                                                                              .of<
+                                                                                              Addflagprovider>(
+                                                                                              context)
+                                                                                              .valuePrecentage13}%",
+                                                                                          style: new TextStyle(
+                                                                                              fontSize: 12.0),
+                                                                                        ),
+                                                                                        trailing: Icon(
+                                                                                            Icons
+                                                                                                .mood),
+                                                                                        linearStrokeCap: LinearStrokeCap
+                                                                                            .roundAll,
+                                                                                        backgroundColor: Colors
+                                                                                            .grey,
+                                                                                        progressColor: constants
+                                                                                            .primarycolor,
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                ],
                                                                               ),
-                                                                            ),
-                                                                          )),
-                                                            ),
-                                                          )
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  )),
-                                        );
+                                                                            )),
+                                                                      ),
+                                                                    )
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ));
+                                                      } else
+                                                        return Center(
+                                                            child: Text(
+                                                                'loading...',
+                                                                style: TextStyle(
+                                                                    fontFamily:
+                                                                    'font')));
+                                                    });
+
                                       });
                                 });
                           }),
@@ -405,7 +834,7 @@ class _homeState extends State<home> {
                                       markers: markers,
                                       onMapCreated: _OnMapCreated,
                                       initialCameraPosition: CameraPosition(
-                                          target: _lastMapPosition, zoom: 20),
+                                          target: _lastMapPosition, zoom: 15),
                                       myLocationButtonEnabled: true,
                                       myLocationEnabled: true,
                                     ),
@@ -486,40 +915,52 @@ class _homeState extends State<home> {
                                     Positioned(
                                       bottom: height * 0.1,
                                       left: width * 0.04,
-                                      child: Opacity(
-                                        opacity: 1,
-                                        child: AvatarGlow(
-                                          glowColor: Colors.black,
-                                          endRadius: 49,
-                                          child: FloatingActionButton(
-                                            heroTag: 'btn1',
-                                            backgroundColor:
-                                                constants.primarycolor,
-                                            child: Center(
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 4),
-                                                child: Container(
-                                                  child: AutoSizeText(
-                                                    "  Add    place",
-                                                    softWrap: true,
+                                      child: IgnorePointer(
+                                        ignoring:
+                                            clickable==null?true:clickable, //userprovider.addplace,
+                                        child: Opacity(
+                                          opacity:
+
+                                         counter==null?0:counter,
+// Try reading data from the counter key. If it doesn't exist, return 0.
+//              final counter = prefs.getInt('counter') ?? 0;, //userprovider.buttonOpacity,
+                                          child: AvatarGlow(
+                                            glowColor: Colors.black,
+                                            endRadius: 49,
+                                            child: FloatingActionButton(
+                                              heroTag: 'btn1',
+                                              backgroundColor:
+                                                  constants.primarycolor,
+                                              child: Center(
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(horizontal: 4),
+                                                  child: Container(
+                                                    child: AutoSizeText(
+                                                      "  Add    place",
+                                                      softWrap: true,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
+                                              onPressed: () {
+
+                                                Navigator.pushNamed(
+                                                    context, addflag.id);
+                                              },
+                                              elevation: 2,
+                                              tooltip: "Add Place",
                                             ),
-                                            onPressed: () {
-                                              Navigator.pushNamed(
-                                                  context, addflag.id);
-                                            },
-                                            elevation: 2,
-                                            tooltip: "Add Place",
                                           ),
                                         ),
                                       ),
                                     ),
                                     AvatarGlow(
+                                      animate: userprovider.addplace == false
+                                          ? true
+                                          : false,
                                       endRadius: 90,
+                                      glowColor: Colors.black,
                                       child: FloatingActionButton.extended(
                                         heroTag: 'btn2',
                                         label: Text("Choose your fav Places"),
@@ -585,24 +1026,6 @@ class _homeState extends State<home> {
     );
   }
 
-//  void _currentLocation() async {
-//    final GoogleMapController controller = await controller.future;
-//    LocationData currentLocation;
-//    var location = new Location();
-//    try {
-//      currentLocation = await location.getLocation();
-//    } on Exception {
-//      currentLocation = null;
-//    }
-//
-//    controller.animateCamera(CameraUpdate.newCameraPosition(
-//      CameraPosition(
-//        bearing: 0,
-//        target: LatLng(currentLocation.latitude, currentLocation.longitude),
-//        zoom: 17.0,
-//      ),
-//    ));
-//  }
   void _getLatLng(Prediction prediction) async {
     GoogleMapsPlaces _places = new GoogleMapsPlaces(
         apiKey: constants.kGoogleApiKey); //Same API_KEY as above
@@ -615,5 +1038,81 @@ class _homeState extends State<home> {
         CameraPosition(
             target: LatLng(latitude, longitude), zoom: 10, bearing: 90)));
     print(address);
+  }
+
+  getCartTotal(String docId) async {
+    var addflag = Provider.of<Addflagprovider>(context, listen: false);
+    var value4 = 0;
+    var value5 = 0;
+    var value6 = 0;
+    var value7 = 0;
+    var value8 = 0;
+    var value9 = 0;
+    var value10 = 0;
+    var value11 = 0;
+    var value12 = 0;
+    var value13 = 0;
+    QuerySnapshot snapshot = await Firestore.instance
+        .collection(constants.Markerscollection)
+        .document(docId)
+        .collection(constants.MarkersCommentscollection)
+        .getDocuments();
+
+    if (snapshot == null) {
+      print("fgvhjklfdfghjkdfcvbn");
+      return;
+    }
+
+    snapshot.documents.forEach((doc) {
+      value4 = value4 + doc.data[constants.Value4];
+      value5 = value5 + doc.data[constants.Value5];
+      value6 = value6 + doc.data[constants.Value6];
+      value7 = value7 + doc.data[constants.Value7];
+      value8 = value8 + doc.data[constants.Value8];
+      value9 = value9 + doc.data[constants.Value9];
+      value10 = value10 + doc.data[constants.Value10];
+      value11 = value11 + doc.data[constants.Value11];
+      value12 = value12 + doc.data[constants.Value12];
+      value13 = value13 + doc.data[constants.Value13];
+    });
+    addflag.value4Percentwith12(
+        (((value4 / snapshot.documents.length) * 100) / 4 +
+                ((value12 / snapshot.documents.length) * 100) / 4) /
+            2);
+    addflag.value4Percentwith12percent(
+        ((((value4 / snapshot.documents.length) * 100) / 4 +
+                    ((value12 / snapshot.documents.length) * 100) / 4) /
+                2) /
+            100);
+    addflag.value5Percentwith6(
+        (((value5 / snapshot.documents.length) * 100) / 4 +
+                ((value6 / snapshot.documents.length) * 100) / 4) /
+            2);
+    addflag.value5Percentwith6percent(
+        ((((value5 / snapshot.documents.length) * 100) / 4 +
+                    ((value6 / snapshot.documents.length) * 100) / 4) /
+                2) /
+            100);
+    addflag.value7Percent(((value7 / snapshot.documents.length) * 100) / 4);
+    addflag.value7Percentpercent(
+        (((value7 / snapshot.documents.length) * 100) / 4) / 100);
+    addflag.value8Percentwith10(
+        (((value8 / snapshot.documents.length) * 100) / 4 +
+                ((value10 / snapshot.documents.length) * 100) / 4) /
+            2);
+    addflag.value8Percentwith10percent(
+        ((((value8 / snapshot.documents.length) * 100) / 4 +
+                    ((value10 / snapshot.documents.length) * 100) / 4) /
+                2) /
+            100);
+    addflag.value9Percent(((value9 / snapshot.documents.length) * 100) / 4);
+    addflag.value9Percentpercent(
+        (((value9 / snapshot.documents.length) * 100) / 4) / 100);
+    addflag.value11Percent(((value11 / snapshot.documents.length) * 100) / 4);
+    addflag.value11Percentpercent(
+        (((value11 / snapshot.documents.length) * 100) / 4) / 100);
+    addflag.value13Percent(((value13 / snapshot.documents.length) * 100) / 4);
+    addflag.value13Percentpercent(
+        (((value13 / snapshot.documents.length) * 100) / 4) / 100);
   }
 }

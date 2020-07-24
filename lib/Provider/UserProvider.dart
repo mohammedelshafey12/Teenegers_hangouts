@@ -6,6 +6,24 @@ class UserProvider extends ChangeNotifier{
   int Scores;
   int Age;
   String accesstoken;
+  bool addplace = false;
+  double buttonOpacity = 0;
+  bool islike;
+  int scores=0;
+
+  changeislike(bool like){
+    islike = like;
+  }
+
+  changedaddPlace(){
+    addplace = true;
+    buttonOpacity = 1;
+    
+  }
+  setScores(int scores1){
+    this.scores = scores1;
+    notifyListeners();
+  }
 
   getaccesstoken(String acess){
     accesstoken = acess;

@@ -26,7 +26,7 @@ void main() => runApp(MultiProvider(
 
       ],
       child: MaterialApp(
-        home: Phoenix(child: waitngWidget()),
+        home: Phoenix(child: Splash_Screen()),
         routes: {
           Splash_Screen.id:(context)=>Splash_Screen(),
           addflag.id: (context) => addflag(),

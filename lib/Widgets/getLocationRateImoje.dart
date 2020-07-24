@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reviews_slider/reviews_slider.dart';
@@ -8,11 +9,12 @@ import 'package:googlemaps/constants.dart';
 class getLocationRateImoje extends StatefulWidget {
   final double width;
   final double height;
+  final String question13;
 
   getLocationRateImoje({
     Key key,
     @required this.width,
-    @required this.height,
+    @required this.height, this.question13,
   }) : super(key: key);
 
   @override
@@ -51,19 +53,94 @@ class _getLocationRateImojeState extends State<getLocationRateImoje> {
                   child: Flexible(
                       child: Center(
                     child: Text(
-                      "I feel exited in this place ",
+                      "Answer This",
                       style: TextStyle(fontFamily: 'font'),
                     ),
                   ))),
             ),
           ),
           Expanded(
-              child: Container(
-            child: Center(child: ReviewSlider(onChange: (index) {
-              index==0?addflagprovider.imojeRate("verybad"):index==1?addflagprovider.imojeRate("bad"):index==2?addflagprovider.imojeRate("okay")
-                  :index==3?addflagprovider.imojeRate("Good"):index==4?addflagprovider.imojeRate("Great"):"";
-            })),
-          )),
+            flex: 1,
+            child: Container(
+              decoration: BoxDecoration(
+                  border: Border(bottom: BorderSide(color: Colors.grey))
+              ),
+              child: Center(
+                child:Container(
+                  padding: EdgeInsets.symmetric(vertical:2),
+                  child: Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical:8.0),
+                        child: AutoSizeText("${widget.question13}",style: TextStyle(
+                            fontFamily: 'font'
+                        ),softWrap: true,maxLines: 1,
+                          maxFontSize: 12,
+
+                          minFontSize: 8,),
+                      ),
+                      Container(
+
+                        child: ReviewSlider(
+
+
+                            options: ['none','Strongly disagree','Disagree','agree','Strongly agree'],
+                            onChange: (index) {
+
+                                index==0?addflagprovider.question13Result("None"):index==1?addflagprovider.question13Result("Strongly disagree"):index==2?addflagprovider.question13Result("Disagree")
+                                    :index==3?addflagprovider.question13Result("agree"):index==4?addflagprovider.question13Result("Strongly agree"):"";
+                                index==0?addflagprovider.value13Result(0):index==1?addflagprovider.value13Result(1):index==2?addflagprovider.value13Result(2)
+                                    :index==3?addflagprovider.value13Result(3):index==4?addflagprovider.value13Result(4):0;
+
+
+                            }),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Container(
+              decoration: BoxDecoration(
+                  border: Border(bottom: BorderSide(color: Colors.grey))
+              ),
+              child: Center(
+                child:Container(
+                  padding: EdgeInsets.symmetric(vertical:2),
+                  child: Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical:8.0),
+                        child: AutoSizeText("I feel exited in this place ",style: TextStyle(
+                            fontFamily: 'font'
+                        ),softWrap: true,maxLines: 1,
+                          maxFontSize: 12,
+
+                          minFontSize: 8,),
+                      ),
+                      Container(
+
+                        child: ReviewSlider(
+
+
+
+                            onChange: (index) {
+
+                                index==0?addflagprovider.imojeRate("Very Bad"):index==1?addflagprovider.imojeRate("Bad"):index==2?addflagprovider.imojeRate("Okay")
+                                    :index==3?addflagprovider.imojeRate("Good"):index==4?addflagprovider.imojeRate("Great"):"";
+
+
+                            }),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

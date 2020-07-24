@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:googlemaps/Provider/modelHud.dart';
+import 'package:googlemaps/Screens/waitingWidget.dart';
 import 'package:googlemaps/Widgets/customTextFormField.dart';
 import 'package:googlemaps/Widgets/customtext.dart';
 import 'package:googlemaps/constants.dart';
@@ -134,7 +135,7 @@ class signup extends StatelessWidget {
                                        _email, _password);
                                    modelhud.isprogressloding(false);
                                    store.adduser(User(_name, _age, authResult.user.uid));
-                                   Navigator.pushNamed(context, home.id);
+                                   Navigator.pushNamed(context, waitngWidget.id);
                                    print(authResult.user.uid);
                                  }on PlatformException catch(e){
                                    Scaffold.of(context).showSnackBar(SnackBar(

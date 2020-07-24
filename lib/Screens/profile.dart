@@ -75,7 +75,7 @@ class _profileState extends State<profile> {
                         "Get More Points and Choose Your Prize",
                         style: TextStyle(fontFamily: 'font', fontSize: 12),
                       ),
-                      trailing: Icon(arrow),
+                      trailing: Text(""),
                     ),
                   ),
                 ),
@@ -142,7 +142,7 @@ class _profileState extends State<profile> {
                                     Container(
                                       width: width * 0.65,
                                       child: customTextFormField(
-                                        hint: snapshot.hasData == false ? "" : "${snapshot.data.documents[0][constants.age]}",
+                                        hint: snapshot.hasData == false ||snapshot.data.documents[0][constants.age] == null ? "" : "${snapshot.data.documents[0][constants.age]}",
                                         iconData: Icons.sentiment_neutral,
                                       ),
                                     ),

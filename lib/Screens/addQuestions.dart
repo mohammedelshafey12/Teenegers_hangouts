@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:googlemaps/Provider/UserProvider.dart';
+import 'package:googlemaps/Screens/QuestionsImojeSlider.dart';
 import 'package:googlemaps/Screens/waitingWidget.dart';
 import 'package:googlemaps/Widgets/add_location_widget.dart';
 import 'package:googlemaps/Widgets/getLocationRateImoje.dart';
@@ -11,6 +12,7 @@ import 'package:googlemaps/constants.dart';
 import 'package:googlemaps/models/Markers.dart';
 import 'package:googlemaps/servecies/store.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 import 'package:googlemaps/Provider/AddFlagProvider.dart';
 
@@ -18,6 +20,8 @@ class addQuestions extends StatefulWidget {
   static String id = "addflag";
   @override
   _addQuestionsState createState() => _addQuestionsState();
+  String docid;
+  addQuestions(this.docid);
 
 
 }
@@ -56,6 +60,21 @@ class _addQuestionsState extends State<addQuestions> {
                     fontWeight: FontWeight.bold,
                     color: constants.blackcolor),
               ),
+              leading: InkWell(
+                  onTap: (){
+                    if(currentindex==0){
+                      Navigator.pop(context);
+                    }else{
+                      setState(() {
+                        currentindex--;
+                        controller.animateToPage(currentindex,
+                            duration: Duration(milliseconds: 200),
+                            curve: Curves.bounceInOut);
+                      });
+
+                    }
+                  },
+                  child: Icon(Icons.arrow_back,))
             ),
             body:
 
@@ -73,7 +92,7 @@ class _addQuestionsState extends State<addQuestions> {
                             height: height * 0.025,
                             width: width * 0.8,
                             child: StepProgressIndicator(
-                              totalSteps: 16,
+                              totalSteps: 5,
                               currentStep: value,
                               size: 25,
                               padding: 0,
@@ -129,200 +148,35 @@ class _addQuestionsState extends State<addQuestions> {
                               getQuestions(
                                 width: width,
                                 height: height,
-                                question:  "•What do you do in this place?",
-                                question1: "Socializing with friends",
-                                question2: "playing sports ",
-                                question3: "eating and drinking",
-                                question4: "others ",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number: 1,
+                                question1:  "•What do you do in this place?",
+                                answer1: "Socializing with friends",
+                                answer2: "playing sports ",
+                                answer3: "eating and drinking",
+                                answer4: "others ",
+                                question2:'•When do you go to those places? ' ,
+                                answer5:"Early  morning" ,
+                                answer6: "day of week",
+                                answer7: "seasonal" ,
+                                answer8:"others" ,
+                                question3: '••	With Whom do you go with and meet their? ',
+                                answer9: "Friends",
+                                answer10: "family",
+                                answer11: "Alone ",
+                                answer12: "others",
                               ),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: '•When do you go to those places? ',
-                                question1: "Early  morning",
-                                question2: "day of week",
-                                question3: "seasonal",
-                                question4: "others",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number: 2,
-                              ),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: '••	With Whom do you go with and meet their? ',
-                                question1: "Friends",
-                                question2: "family",
-                                question3: "Alone ",
-                                question4: "others",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number: 3,
-                              ),
-                              getLocationRateImoje(width: width, height: height,),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: 'I like spend time with my friends in this place? ',
-                                question1: "Strongly disagree ",
-                                question2: "Disagree ",
-                                question3: "agree ",
-                                question4: "Strongly agree ",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number: 4,
-                              ),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: 'I can freely move around in this place ? ',
-                                question1: "Strongly disagree ",
-                                question2: "Disagree ",
-                                question3: "agree ",
-                                question4: "Strongly agree ",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number: 5,
-                              ),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: 'There is no direct control on me from adult in this place? ',
-                                question1: "Strongly disagree ",
-                                question2: "Disagree ",
-                                question3: "agree ",
-                                question4: "Strongly agree ",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number: 6,
-                              ),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: 'I feel safe in this place ? ',
-                                question1: "Strongly disagree ",
-                                question2: "Disagree ",
-                                question3: "agree ",
-                                question4: "Strongly agree ",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number:7,
-                              ),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: 'I can express myself freely in this place ? ',
-                                question1: "Strongly disagree ",
-                                question2: "Disagree ",
-                                question3: "agree ",
-                                question4: "Strongly agree ",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number:8,
-                              ),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: 'I feel excited in this places ? ',
-                                question1: "Strongly disagree ",
-                                question2: "Disagree ",
-                                question3: "agree ",
-                                question4: "Strongly agree ",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number:9,
-                              ),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: 'I feel motivated in this place ? ',
-                                question1: "Strongly disagree ",
-                                question2: "Disagree ",
-                                question3: "agree ",
-                                question4: "Strongly agree ",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number:10,
-                              ),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: 'I Feel accepted  ? ',
-                                question1: "Strongly disagree ",
-                                question2: "Disagree ",
-                                question3: "agree ",
-                                question4: "Strongly agree ",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number:11,
-                              ),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: 'There is a lot of recreational opportunities here? ',
-                                question1: "Strongly disagree ",
-                                question2: "Disagree ",
-                                question3: "agree ",
-                                question4: "Strongly agree ",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number:12,
-                              ),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: 'I can see and interact  with other teens easily? ',
-                                question1: "Strongly disagree ",
-                                question2: "Disagree ",
-                                question3: "agree ",
-                                question4: "Strongly agree ",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number:13,
-                              ),
-                              getQuestions(
-                                width: width,
-                                height: height,
-                                question: 'I have a lot of different activities  in this place? ',
-                                question1: "Strongly disagree ",
-                                question2: "Disagree ",
-                                question3: "agree ",
-                                question4: "Strongly agree ",
-                                icon1: Icons.question_answer,
-                                icon2: Icons.question_answer,
-                                icon3: Icons.question_answer,
-                                icon4: Icons.question_answer,
-                                number:14,
-                              ),
+
+
+                              QuestionsImojeSlider(height: height,width: width,Question1:"I can freely move around in this place?" ,
+                                  Question2:'There is no direct control on me from adult in this place?',
+                              Question3: 'I feel safe in this place ? ',pagenumber: 1,),
+                              QuestionsImojeSlider(height: height,width: width,Question1:'I can express myself freely in this place? ' ,
+                                Question2:'I feel excited in this places? ',
+                                Question3: 'I feel motivated in this place?',pagenumber: 2,),
+                              QuestionsImojeSlider(height: height,width: width,Question1:'I Feel accepted?' ,
+                                Question2:'There is a lot of recreational opportunities here?',
+                                Question3: 'I can see and interact  with other teens easily? ',pagenumber: 3,),
+                              getLocationRateImoje(width: width, height: height,question13: 'I have a lot of different activities  in this place',),
+
                             ],
                           ),
                         ),
@@ -353,40 +207,63 @@ class _addQuestionsState extends State<addQuestions> {
                               String question11 = Provider.of<Addflagprovider>(context,listen: false).question11;
                               String question12 = Provider.of<Addflagprovider>(context,listen: false).question12;
                               String question13 = Provider.of<Addflagprovider>(context,listen: false).question13;
-                              String question14 = Provider.of<Addflagprovider>(context,listen: false).question14;
+                              int value4 = Provider.of<Addflagprovider>(context,listen: false).value4;
+                              int value5 = Provider.of<Addflagprovider>(context,listen: false).value5;
+                              int value6 = Provider.of<Addflagprovider>(context,listen: false).value6;
+                              int value7 = Provider.of<Addflagprovider>(context,listen: false).value7;
+                              int value8 = Provider.of<Addflagprovider>(context,listen: false).value8;
+                              int value9 = Provider.of<Addflagprovider>(context,listen: false).value9;
+                              int value10 = Provider.of<Addflagprovider>(context,listen: false).value10;
+                              int value11 = Provider.of<Addflagprovider>(context,listen: false).value11;
+                              int value12 = Provider.of<Addflagprovider>(context,listen: false).value12;
+                              int value13 = Provider.of<Addflagprovider>(context,listen: false).value13;
+                              var Userprovider = Provider.of<UserProvider>(context,listen: false);
+
                               double lat = Provider.of<Addflagprovider>(context,listen: false).lat;
                               double long = Provider.of<Addflagprovider>(context,listen: false).lang;
                               var user = Provider.of<FirebaseUser>(context,listen: false);
 
-                              if(currentindex==15){
+                              if(currentindex==4){
                                 var time  = DateTime.now();
                                 if (ConnectionState.active != null){
-                                  store.addNarker(Markers(adrees, GeoPoint(lat,long)), MarkerComments(user.uid, question1, question2, time,question3,question4,question5
-                                    ,question6,question7,question8,question9,question10,question11,question12,question13,question14,imojeRate,));
+                                  store.addMarkerComment(widget.docid, MarkerComments(user.uid, question1, question2, time,question3,question4,question5
+                                      ,question6,question7,question8,question9,question10,question11,question12,question13,imojeRate,value4
+                                      ,value5,value6,value7,value8,value9,value10,value11,value12,value13));
+                                  Provider.of<UserProvider>(context,listen: false).setScores((value*10));
+                                  store.updateScore(user.uid, (value*10));
                                   controller.dispose();
                                   setState(() {
                                     currentindex=-1;
                                   });
+
+
+                                  ShowAddPlaceButton();
                                   Navigator.pushNamed(context, waitngWidget.id);
+
 
                                 }
                               }
+                            if(currentindex==0&&question1!=null&&question2!=null&&question3!=null
+                                ||currentindex==1&&question4!=null&&question5!=null&&question6!=null||currentindex==2&&question7!=null&&question8!=null&&question9!=null
+                                ||currentindex==3&&question10!=null&&question11!=null&&question12!=null||currentindex==4&&question13!=null&&imojeRate!=null)  {
+                              setState(() {
+                                currentindex++;
+                                if (value < 5) {
+                                  value++;
+                                }
 
-                                setState(() {
-                                  currentindex++;
-                                  if (value < 4) {
-                                    value++;
-                                  }
-
-                                });
-                                controller.animateToPage(currentindex,
-                                    duration: Duration(milliseconds: 200),
-                                    curve: Curves.bounceInOut);
+                              });
+                              controller.animateToPage(currentindex,
+                                  duration: Duration(milliseconds: 200),
+                                  curve: Curves.bounceInOut);
+                            }else {
+                              Scaffold.of(context).showSnackBar(SnackBar(content: Text("Please Apply Empty fields",style: TextStyle(fontFamily: 'font'),)));
+                            }
 
                             },
                             child: Center(
                               child: Text(
-                                currentindex == 3 ? "Finish" : "Next",
+                                currentindex == 4 ? "Finish" : "Next",
                                 style: TextStyle(fontFamily: 'font'),
                               ),
                             ),
@@ -401,6 +278,13 @@ class _addQuestionsState extends State<addQuestions> {
             ),
           )),
     );
+  }
+  ShowAddPlaceButton()async{
+    final prefs = await SharedPreferences.getInstance();
+
+// set value
+    prefs.setDouble('counter', 1);
+    prefs.setBool('clickable', false);
   }
 
 

@@ -207,8 +207,15 @@ final auth1  = FirebaseAuth.instance;
                                   try{
                                     user = (await auth1.signInWithCredential(authCredential)).user;
                                      userprovider.getaccesstoken(accessToken.token);
-                                     store.adduserfacebook(User(user.displayName,null,user.uid), user.uid);
-                                  //  Phoenix.rebirth(context);
+
+                                    final DocumentSnapshot doc =
+                                    await Firestore.instance.collection(constants.usercollection).document(accessToken.token).get();
+                                    if(!doc.exists) {
+                                      store.adduserfacebook(User(
+                                          user.displayName, null, user.uid),
+                                          user.displayName);
+                                    }
+
                                     Navigator.pushNamed(context, waitngWidget.id);
                                   }catch(e){
                                   print(e.toString());
@@ -258,11 +265,20 @@ final auth1  = FirebaseAuth.instance;
                                     final AuthResult authResult = await auth1.signInWithCredential(credential);
                                     final FirebaseUser user = authResult.user;
 
+
                                     assert(!user.isAnonymous);
                                     assert(await user.getIdToken() != null);
 
                                     final FirebaseUser currentUser = await auth1.currentUser();
                                     if(currentUser !=null){
+                                      Store store = Store();
+                                      final DocumentSnapshot doc =
+                                      await Firestore.instance.collection(constants.usercollection).document(user.uid).get();
+                                      if(!doc.exists) {
+                                        store.adduserfacebook(User(
+                                            user.displayName, null, user.uid),
+                                            user.displayName);
+                                      }
                                       Navigator.pushNamed(context, home.id);
                                     }
 
