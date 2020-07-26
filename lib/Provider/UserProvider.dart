@@ -9,7 +9,7 @@ class UserProvider extends ChangeNotifier{
   bool addplace = false;
   double buttonOpacity = 0;
   bool islike;
-  int scores=0;
+  int scores;
 
   changeislike(bool like){
     islike = like;

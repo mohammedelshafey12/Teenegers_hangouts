@@ -81,14 +81,13 @@ class _LocationStackState extends State<LocationStack> {
                   content:pickImageDialog(widget.width,widget.height,widget.docId),
                   title: Text('Choose Cover to this Place'),
                   actions: <Widget>[
-                    FlatButton(onPressed: (){
-                    }, child: Text('Ok')),
+
                     FlatButton(onPressed: (){
 
                       Navigator.pop(context);
 
 
-                    }, child: Text('Skip'))
+                    }, child: Text('Ok'))
                   ],
                 )
             );

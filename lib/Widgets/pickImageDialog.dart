@@ -26,12 +26,13 @@ class _pickImageDialogState extends State<pickImageDialog> {
   String _uploadedFileURL;
   bool ignoring =true;
   double opacity = 0;
+  String text = "";
   @override
   Widget build(BuildContext context) {
     return  ModalProgressHUD(
       inAsyncCall: Provider.of<modelHud>(context).isloading,
       child: Container(
-        height: MediaQuery.of(context).size.height*0.5,
+        height: MediaQuery.of(context).size.height*0.4,
         child: Column(
           children: <Widget>[
             Text('Selected Image'),
@@ -44,51 +45,61 @@ class _pickImageDialogState extends State<pickImageDialog> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 RaisedButton(
-                  child: Text( 'Choose File'),
+                  child: Text( 'Choose Image'),
                   onPressed: pickimage,
-                  color: Colors.cyan,
+                  color: constants.primarycolor.withOpacity(0.5),
                 ),
-                Builder(
-                  builder: (context)=>
+
                    IgnorePointer(
                      ignoring:ignoring ,
                      child: Opacity(
                        opacity: opacity,
-                       child: RaisedButton(
-                        child: Text( 'Upload File'),
-                        onPressed:()async {
-                          if(_image!=null){
-                            Provider.of<modelHud>(context).isprogressloding(true);
+                       child: Builder(
+                         builder: (context)=>
+                             RaisedButton(
+                          child: Text( 'Upload '),
+                          onPressed:()async {
+                            if(_image!=null){
+                              Provider.of<modelHud>(context,listen: false).isprogressloding(true);
 
-                            Firestore firestore = Firestore.instance;
-                            StorageReference storageReference = FirebaseStorage.instance
-                                .ref()
-                                .child('images/${Path.basename(_image.path)}}');
-                            StorageUploadTask uploadTask = storageReference.putFile(_image);
-                            await uploadTask.onComplete;
+                              Firestore firestore = Firestore.instance;
+                              StorageReference storageReference = FirebaseStorage.instance
+                                  .ref()
+                                  .child('images/${Path.basename(_image.path)}}');
+                              StorageUploadTask uploadTask = storageReference.putFile(_image);
+                              await uploadTask.onComplete;
 
-                            print('File Uploaded');
-                            storageReference.getDownloadURL().then((fileURL) {
-                              firestore.collection(constants.Markerscollection).document(widget.docId).updateData({
-                                constants.PlaceImage: fileURL,
-                              }).whenComplete(() {
-                                Provider.of<modelHud>(context).isprogressloding(false);
-                                Scaffold.of(context).showSnackBar(SnackBar(content: Text("Upload Success")));
+                              print('File Uploaded');
+                              storageReference.getDownloadURL().then((fileURL) {
+                                firestore.collection(constants.Markerscollection).document(widget.docId).updateData({
+                                  constants.PlaceImage: fileURL,
+                                }).whenComplete(() {
+                                  Provider.of<modelHud>(context,listen: false).isprogressloding(false);
+                                  setState(() {
+                                    text = "Cover Uploaded It Will be Soon...";
+                                  });
+                                });
+                                setState(() {
+                                  _uploadedFileURL = fileURL;
+                                });
                               });
-                              setState(() {
-                                _uploadedFileURL = fileURL;
-                              });
-                            });
-                          }
+                            }
 
-                        },
-                        color: Colors.cyan,
+                          },
+                          color: constants.primarycolor,
                   ),
+                       ),
                      ),
                    ),
-                ),
+
               ],
             ),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 15),
+              child: Text(
+                text,style: TextStyle(fontFamily: 'font'),
+              ),
+            )
           ],
         ),
       ),
