@@ -9,7 +9,7 @@ class UserProvider extends ChangeNotifier{
   bool addplace = false;
   double buttonOpacity = 0;
   bool islike;
-  int scores;
+  int scores3;
 
   changeislike(bool like){
     islike = like;
@@ -21,7 +21,7 @@ class UserProvider extends ChangeNotifier{
     
   }
   setScores(int scores1){
-    this.scores = scores1;
+    this.scores3 = scores1;
     notifyListeners();
   }
 
