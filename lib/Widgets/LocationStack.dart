@@ -12,7 +12,7 @@ class LocationStack extends StatefulWidget {
       {Key key,
       @required this.height,
       @required this.width,
-      @required this.data,
+      @required this.placImage,
       @required this.urlLoad,
       @required this.docId,
       @required this.store,
@@ -24,7 +24,7 @@ class LocationStack extends StatefulWidget {
   final double height;
   final String placeName;
   final double width;
-  var data;
+  String placImage;
   final String urlLoad;
   String docId;
   bool liked;
@@ -55,9 +55,9 @@ class _LocationStackState extends State<LocationStack> {
           height: widget.height * 0.25,
           width: widget.width,
           child: FadeInImage(
-            image: NetworkImage(widget.data["${constants.PlaceImage}"] == null
+            image: NetworkImage(widget.placImage == null
                 ? widget.urlLoad
-                : widget.data["${constants.PlaceImage}"]),
+                : widget.placImage),
             fit: BoxFit.cover,
             placeholder: AssetImage('images/markercover.png'),
           ),

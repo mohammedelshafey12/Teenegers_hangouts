@@ -23,455 +23,742 @@ class favorite extends StatefulWidget {
   _favoriteState createState() => _favoriteState();
 }
 
+
 class _favoriteState extends State<favorite> {
-  List<MarkerComments> markercomments=[];
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  getUser();
+  }
+
+  getUser()async{
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    setState(() {
+      user1 = user;
+    });
+  }
+  FirebaseUser user1;
+
+
   String urlLoad =
       'https://firebasestorage.googleapis.com/v0/b/double-zenith-280321.appspot.com/o/images%2Fheader%20bg.png?alt=media&token=2a399258-a53e-4ceb-99e8-0e151e9c05fa';
   @override
   Widget build(BuildContext context) {
+
+
     Store store = Store();
     var user = Provider.of<FirebaseUser>(context);
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     var data;
+
+
     return Material(
       child: Scaffold(
           backgroundColor: constants.purblecolor,
           body: StreamBuilder(
-              stream: store.favourite(user.uid),
-              builder: (context, snapshot) {
+            stream: store.MarkersStream(),
+            builder: (context,snapshot) {
+              if (snapshot.hasData) {
+                var doc = snapshot.data.documents;
 
-                if (snapshot.hasData) {
-                  var data2 = snapshot.data.documents;
-                  if (snapshot.data.documents.length == 0) {
-                    return Center(
-                      child: Text(
-                        "No Favourite yet ...",
-                        style: TextStyle(fontFamily: 'font'),
-                      ),
-                    );
-                  }
-                  return ListView.builder(
+                  return StreamBuilder(
+                        stream: store.favourite(user.uid),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            var data2 = snapshot.data.documents;
+                            if (snapshot.data.documents.length == 0) {
+                              return Center(
+                                child: Text(
+                                  "No Favourite yet ...",
+                                  style: TextStyle(fontFamily: 'font'),
+                                ),
+                              );
+                            }
+                            return ListView.builder(
 
-                      itemCount: snapshot.data.documents.length,
-                      padding: EdgeInsets.all(8),
-                      itemBuilder: (context, int index) {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                              height: height * 0.17,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: Colors.white),
-                              child: Column(
-                                children: <Widget>[
-                                  LayoutBuilder(
-                                    builder: (context, constrain) => Container(
-                                      height: height * 0.11,
-                                      decoration: BoxDecoration(
-                                          //  borderRadius: BorderRadius.only(topLeft: Radius.circular(10),topRight:Radius.circular(10)),
-                                          border: Border(
-                                              bottom:
-                                                  BorderSide(color: Colors.grey))
-                                          // border: Border(bottom:BorderSide(color: Colors.grey)),
-                                          //color: Colors.amber,
-                                          ),
-                                      child: Container(
-                                          width: constrain.maxWidth,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Padding(
-                                                padding: const EdgeInsets.all(15.0),
-                                                child: SvgPicture.asset("images/icon.svg"),
-                                              ),
-                                              Container(
-                                                width: width*0.5,
-                                                child: AutoSizeText(
-
-                                                  "${snapshot.data.documents[index][constants.placeName]}",
-                                                  style: TextStyle(
-                                                      fontFamily: 'font',
-
-                                                      ),
-                                                  maxLines: 1,
-                                                  minFontSize: 12,
-                                                  softWrap: true,
-                                                  maxFontSize: 15,
-                                                  wrapWords: true,
-                                                  textScaleFactor: 1,
-                                                ),
-                                              ),
-                                              Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: <Widget>[
+                                itemCount: snapshot.data.documents.length,
+                                padding: EdgeInsets.all(8),
+                                itemBuilder: (context, int index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Container(
+                                        height: height * 0.17,
+                                        decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                                10),
+                                            color: Colors.white),
+                                        child: Column(
+                                          children: <Widget>[
+                                            LayoutBuilder(
+                                              builder: (context, constrain) =>
                                                   Container(
-                                                    child: SvgPicture.asset("images/stars.svg"),
+                                                    height: height * 0.11,
+                                                    decoration: BoxDecoration(
+                                                      //  borderRadius: BorderRadius.only(topLeft: Radius.circular(10),topRight:Radius.circular(10)),
+                                                        border: Border(
+                                                            bottom:
+                                                            BorderSide(
+                                                                color: Colors
+                                                                    .grey))
+                                                      // border: Border(bottom:BorderSide(color: Colors.grey)),
+                                                      //color: Colors.amber,
+                                                    ),
+                                                    child: Container(
+                                                        width: constrain
+                                                            .maxWidth,
+                                                        child: Row(
+                                                          children: <Widget>[
+                                                            Padding(
+                                                              padding: const EdgeInsets
+                                                                  .all(15.0),
+                                                              child: SvgPicture
+                                                                  .asset(
+                                                                  "images/icon.svg"),
+                                                            ),
+                                                            Container(
+                                                              width: width *
+                                                                  0.5,
+                                                              child: AutoSizeText(
+
+                                                                "${snapshot.data
+                                                                    .documents[index][constants
+                                                                    .placeName]}",
+                                                                style: TextStyle(
+                                                                  fontFamily: 'font',
+
+                                                                ),
+                                                                maxLines: 1,
+                                                                minFontSize: 12,
+                                                                softWrap: true,
+                                                                maxFontSize: 15,
+                                                                wrapWords: true,
+                                                                textScaleFactor: 1,
+                                                              ),
+                                                            ),
+                                                            Column(
+                                                              mainAxisAlignment: MainAxisAlignment
+                                                                  .center,
+                                                              children: <
+                                                                  Widget>[
+                                                                Container(
+                                                                  child: SvgPicture
+                                                                      .asset(
+                                                                      "images/stars.svg"),
+                                                                ),
+                                                              ],
+                                                            )
+                                                          ],
+                                                        )),
                                                   ),
-                                                ],
-                                              )
-                                            ],
-                                          )),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: height * 0.015,
-                                  ),
-                                  Center(
-                                    child: InkWell(
-                                      onTap: (){
+                                            ),
+                                            SizedBox(
+                                              height: height * 0.015,
+                                            ),
+                                            Center(
+                                              child: InkWell(
+                                                onTap: () {
+                                                  showModalBottomSheet(
+                                                      elevation: 1,
+                                                      isScrollControlled: true,
+                                                      context: context,
+                                                      builder: (builder) {
+                                                        return StreamBuilder(
+                                                            stream: store
+                                                                .MarkersCommentStream(
+                                                                data2[index][constants
+                                                                    .time]),
+                                                            builder: (context,
+                                                                snapshot) {
+                                                              if (snapshot
+                                                                  .hasData) {
+                                                                //markercomments = [];
+                                                                  data = snapshot.data.documents;
 
-                                        showModalBottomSheet(
-                                            elevation: 1,
-                                            isScrollControlled: true,
-                                            context: context,
-                                            builder: (builder) {
-                                              return StreamBuilder(
-                                                  stream: store.MarkersCommentStream(
-                                                  data2[index][constants.time]),
-                                                  builder: (context, snapshot) {
-                                                    if (snapshot.hasData) {
-                                                      //markercomments = [];
-                                                      for (var doc2
-                                                      in snapshot.data.documents) {
-                                                         data= doc2.data;
-                                                        markercomments.add(MarkerComments(
-                                                          data[constants.uid],
-                                                          data[constants.Question1],
-                                                          data[constants.Question2],
-                                                          data[constants.time],
-                                                          data[constants.Question3],
-                                                          data[constants.Question4],
-                                                          data[constants.Question5],
-                                                          data[constants.Question6],
-                                                          data[constants.Question7],
-                                                          data[constants.Question8],
-                                                          data[constants.Question9],
-                                                          data[constants.Question10],
-                                                          data[constants.Question11],
-                                                          data[constants.Question12],
-                                                          data[constants.Question13],
-                                                          data[constants.placeRate],
-                                                          data[constants.Value4],
-                                                          data[constants.Value5],
-                                                          data[constants.Value6],
-                                                          data[constants.Value7],
-                                                          data[constants.Value8],
-                                                          data[constants.Value9],
-                                                          data[constants.Value10],
-                                                          data[constants.Value11],
-                                                          data[constants.Value12],
-                                                          data[constants.Value13],
-                                                        ));
-                                                      }
-                                                      getCartTotal(
-                                                          data2[index][constants.time]);
-                                                    }
 
-                                                    return StreamBuilder(
-                                                              stream:
-                                                              store.favouriteLike(
-                                                                  markercomments[0]
-                                                                      .owneruid),
-                                                              builder:
-                                                                  (context, snapshot) {
-                                                                if (snapshot.hasData) {
-                                                                  return Container(
-                                                                      height: MediaQuery.of(
-                                                                          context)
-                                                                          .size
-                                                                          .height *
-                                                                          0.98,
-                                                                      color:
-                                                                      Colors.white,
-                                                                      child: Scaffold(
-                                                                        appBar: AppBar(
-                                                                          elevation: 1,
-                                                                          centerTitle:
-                                                                          true,
-                                                                          backgroundColor:
-                                                                          constants
-                                                                              .whitecolor,
-                                                                          title: Text(
-                                                                            "Do You Love This Place?",
-                                                                            style: TextStyle(
-                                                                                fontFamily:
-                                                                                'font',
-                                                                                fontWeight:
-                                                                                FontWeight
-                                                                                    .bold,
-                                                                                color: constants
-                                                                                    .blackcolor),
-                                                                          ),
-                                                                        ),
-                                                                        floatingActionButton:
-                                                                        FloatingActionButton
-                                                                            .extended(
-                                                                          onPressed:
-                                                                              () {
-                                                                            Navigator.of(
-                                                                                context)
-                                                                                .push(MaterialPageRoute(
-                                                                                builder: (context) =>
-                                                                                    addQuestions(data2[index][constants.time])));
-                                                                          },
-                                                                          label: Text(
-                                                                              "Add Your Answers now!"),
-                                                                          backgroundColor:
-                                                                          constants
-                                                                              .primarycolor,
-                                                                        ),
-                                                                        floatingActionButtonLocation:
-                                                                        FloatingActionButtonLocation
-                                                                            .centerFloat,
-                                                                        body: Container(
-                                                                          child: Column(
-                                                                            children: <
-                                                                                Widget>[
-                                                                              Container(
-                                                                                width: MediaQuery.of(context)
-                                                                                    .size
-                                                                                    .width,
-                                                                                height: MediaQuery.of(context).size.height *
-                                                                                    0.07,
-                                                                                color: constants
-                                                                                    .primarycolor,
-                                                                                child:
-                                                                                Center(
-                                                                                  child:
-                                                                                  Padding(
-                                                                                    padding:
-                                                                                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                                                getCartTotal(
+                                                                    data2[index][constants
+                                                                        .time]);
+                                                              }
+
+                                                              return StreamBuilder(
+                                                                  stream:
+                                                                  store
+                                                                      .favouriteLike(
+                                                                     user1.uid),
+                                                                  builder:
+                                                                      (context,
+                                                                      snapshot) {
+                                                                    if (snapshot
+                                                                        .hasData) {
+                                                                      return Container(
+                                                                          height: MediaQuery
+                                                                              .of(
+                                                                              context)
+                                                                              .size
+                                                                              .height *
+                                                                              0.98,
+                                                                          color:
+                                                                          Colors
+                                                                              .white,
+                                                                          child: Scaffold(
+                                                                            appBar: AppBar(
+                                                                              elevation: 1,
+                                                                              centerTitle:
+                                                                              true,
+                                                                              backgroundColor:
+                                                                              constants
+                                                                                  .whitecolor,
+                                                                              title: Text(
+                                                                                "Do You Love This Place?",
+                                                                                style: TextStyle(
+                                                                                    fontFamily:
+                                                                                    'font',
+                                                                                    fontWeight:
+                                                                                    FontWeight
+                                                                                        .bold,
+                                                                                    color: constants
+                                                                                        .blackcolor),
+                                                                              ),
+                                                                            ),
+                                                                            floatingActionButton:
+                                                                            FloatingActionButton
+                                                                                .extended(
+                                                                              onPressed:
+                                                                                  () {
+                                                                                Navigator
+                                                                                    .of(
+                                                                                    context)
+                                                                                    .push(
+                                                                                    MaterialPageRoute(
+                                                                                        builder: (
+                                                                                            context) =>
+                                                                                            addQuestions(
+                                                                                                doc.documentID.toString())));
+                                                                              },
+                                                                              label: Text(
+                                                                                  "Add Your Answers now!"),
+                                                                              backgroundColor:
+                                                                              constants
+                                                                                  .primarycolor,
+                                                                            ),
+                                                                            floatingActionButtonLocation:
+                                                                            FloatingActionButtonLocation
+                                                                                .centerFloat,
+                                                                            body: Container(
+                                                                              child: Column(
+                                                                                children: <
+                                                                                    Widget>[
+                                                                                  Container(
+                                                                                    width: MediaQuery
+                                                                                        .of(
+                                                                                        context)
+                                                                                        .size
+                                                                                        .width,
+                                                                                    height: MediaQuery
+                                                                                        .of(
+                                                                                        context)
+                                                                                        .size
+                                                                                        .height *
+                                                                                        0.07,
+                                                                                    color: constants
+                                                                                        .primarycolor,
                                                                                     child:
-                                                                                    AutoSizeText(
-                                                                                      data2[index]["${constants.placeName}"] == null ? "" : data2[index]["${constants.placeName}"],
-                                                                                      style: TextStyle(fontFamily: 'font', color: constants.whitecolor),
-                                                                                      textAlign: TextAlign.center,
-                                                                                      softWrap: true,
-                                                                                      wrapWords: true,
+                                                                                    Center(
+                                                                                      child:
+                                                                                      Padding(
+                                                                                        padding:
+                                                                                        const EdgeInsets
+                                                                                            .symmetric(
+                                                                                            horizontal: 10,
+                                                                                            vertical: 10),
+                                                                                        child:
+                                                                                        AutoSizeText(
+                                                                                          data2[index]["${constants
+                                                                                              .placeName}"] ==
+                                                                                              null
+                                                                                              ? ""
+                                                                                              : data2[index]["${constants
+                                                                                              .placeName}"],
+                                                                                          style: TextStyle(
+                                                                                              fontFamily: 'font',
+                                                                                              color: constants
+                                                                                                  .whitecolor),
+                                                                                          textAlign: TextAlign
+                                                                                              .center,
+                                                                                          softWrap: true,
+                                                                                          wrapWords: true,
+                                                                                        ),
+                                                                                      ),
                                                                                     ),
                                                                                   ),
-                                                                                ),
-                                                                              ),
-                                                                              LocationStack(
-                                                                                height:
-                                                                                height,
-                                                                                width:
-                                                                                width,
-                                                                                data:
-                                                                                data,
-                                                                                urlLoad:
-                                                                                urlLoad,
-                                                                                docId:
-                                                                                data2[index][constants.time],
-                                                                                store:
-                                                                                store,
-                                                                                liked: snapshot
-                                                                                    .data
-                                                                                    .documents[0][constants.IsFavourite],
-                                                                                placeName: data2[index]["${constants.placeName}"],
-                                                                                location: data2[index][constants.Location],
-                                                                              ),
+                                                                                  LocationStack(
+                                                                                    height:
+                                                                                    height,
+                                                                                    width:
+                                                                                    width,
+                                                                                    placImage:
+                                                                                    doc[index][constants.PlaceImage],
+                                                                                    urlLoad:
+                                                                                    urlLoad,
+                                                                                    docId:
+                                                                                    data2[index][constants
+                                                                                        .time],
+                                                                                    store:
+                                                                                    store,
+                                                                                    liked: snapshot
+                                                                                        .data
+                                                                                        .documents[0][constants
+                                                                                        .IsFavourite],
+                                                                                    placeName: data2[index]["${constants
+                                                                                        .placeName}"],
+                                                                                    location: data2[index][constants
+                                                                                        .Location],
+                                                                                  ),
 
-                                                                              Expanded(
-                                                                                child:
-                                                                                Padding(
-                                                                                  padding:
-                                                                                  const EdgeInsets.all(15.0),
-                                                                                  child: Container(
-                                                                                      height: height * 0.2,
-                                                                                      width: width,
+                                                                                  Expanded(
+                                                                                    child:
+                                                                                    Padding(
+                                                                                      padding:
+                                                                                      const EdgeInsets
+                                                                                          .all(
+                                                                                          15.0),
                                                                                       child: Container(
-                                                                                        child: Column(
-                                                                                          children: <Widget>[
-                                                                                            Row(
-                                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                              children: <Widget>[
-                                                                                                Text('Peer Relationships', style: TextStyle(fontFamily: 'font')),
-                                                                                                new LinearPercentIndicator(
-                                                                                                  width: 140.0,
-                                                                                                  lineHeight: 14.0,
-                                                                                                  percent: ((Provider.of<Addflagprovider>(context).valuePrecentage4with12percent) == null ? 0 : (Provider.of<Addflagprovider>(context).valuePrecentage4with12percent)),
-                                                                                                  center: Text(
-                                                                                                    "${(Provider.of<Addflagprovider>(context).valuePrecentage4with12 == null ? 0 : ((Provider.of<Addflagprovider>(context).valuePrecentage4with12)))}%",
-                                                                                                    style: new TextStyle(fontSize: 12.0),
-                                                                                                  ),
-                                                                                                  trailing: Icon(Icons.mood),
-                                                                                                  linearStrokeCap: LinearStrokeCap.roundAll,
-                                                                                                  backgroundColor: Colors.grey,
-                                                                                                  progressColor: constants.primarycolor,
+                                                                                          height: height *
+                                                                                              0.2,
+                                                                                          width: width,
+                                                                                          child: Container(
+                                                                                            child: Column(
+                                                                                              children: <
+                                                                                                  Widget>[
+                                                                                                Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment
+                                                                                                      .spaceBetween,
+                                                                                                  children: <
+                                                                                                      Widget>[
+                                                                                                    Text(
+                                                                                                        'Peer Relationships',
+                                                                                                        style: TextStyle(
+                                                                                                            fontFamily: 'font')),
+                                                                                                    new LinearPercentIndicator(
+                                                                                                      width: 140.0,
+                                                                                                      lineHeight: 14.0,
+                                                                                                      percent: ((Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage4with12percent) ==
+                                                                                                          null
+                                                                                                          ? 0
+                                                                                                          : (Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage4with12percent)),
+                                                                                                      center: Text(
+                                                                                                        "${(Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage4with12 ==
+                                                                                                            null
+                                                                                                            ? 0
+                                                                                                            : ((Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage4with12)))}%",
+                                                                                                        style: new TextStyle(
+                                                                                                            fontSize: 12.0),
+                                                                                                      ),
+                                                                                                      trailing: Icon(
+                                                                                                          Icons
+                                                                                                              .mood),
+                                                                                                      linearStrokeCap: LinearStrokeCap
+                                                                                                          .roundAll,
+                                                                                                      backgroundColor: Colors
+                                                                                                          .grey,
+                                                                                                      progressColor: constants
+                                                                                                          .primarycolor,
+                                                                                                    ),
+                                                                                                  ],
+                                                                                                ),
+                                                                                                Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment
+                                                                                                      .spaceBetween,
+                                                                                                  children: <
+                                                                                                      Widget>[
+                                                                                                    Text(
+                                                                                                        'Sense of freedom',
+                                                                                                        style: TextStyle(
+                                                                                                            fontFamily: 'font')),
+                                                                                                    new LinearPercentIndicator(
+                                                                                                      width: 140.0,
+                                                                                                      lineHeight: 14.0,
+                                                                                                      percent: ((Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage5with6percent) ==
+                                                                                                          null
+                                                                                                          ? 0
+                                                                                                          : (Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage5with6percent)),
+                                                                                                      center: Text(
+                                                                                                        "${(Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage5with6 ==
+                                                                                                            null
+                                                                                                            ? 0
+                                                                                                            : (Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage5with6))}%",
+                                                                                                        style: new TextStyle(
+                                                                                                            fontSize: 12.0),
+                                                                                                      ),
+                                                                                                      trailing: Icon(
+                                                                                                          Icons
+                                                                                                              .mood),
+                                                                                                      linearStrokeCap: LinearStrokeCap
+                                                                                                          .roundAll,
+                                                                                                      backgroundColor: Colors
+                                                                                                          .grey,
+                                                                                                      progressColor: constants
+                                                                                                          .primarycolor,
+                                                                                                    ),
+                                                                                                  ],
+                                                                                                ),
+                                                                                                Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment
+                                                                                                      .spaceBetween,
+                                                                                                  children: <
+                                                                                                      Widget>[
+                                                                                                    Text(
+                                                                                                        'Safety',
+                                                                                                        style: TextStyle(
+                                                                                                            fontFamily: 'font')),
+                                                                                                    new LinearPercentIndicator(
+                                                                                                      width: 140.0,
+                                                                                                      lineHeight: 14.0,
+                                                                                                      percent: Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage7percent ==
+                                                                                                          null
+                                                                                                          ? 0
+                                                                                                          : Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage7percent,
+                                                                                                      center: Text(
+                                                                                                        "${Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage7 ==
+                                                                                                            null
+                                                                                                            ? 0
+                                                                                                            : Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage7}%",
+                                                                                                        style: new TextStyle(
+                                                                                                            fontSize: 12.0),
+                                                                                                      ),
+                                                                                                      trailing: Icon(
+                                                                                                          Icons
+                                                                                                              .mood),
+                                                                                                      linearStrokeCap: LinearStrokeCap
+                                                                                                          .roundAll,
+                                                                                                      backgroundColor: Colors
+                                                                                                          .grey,
+                                                                                                      progressColor: constants
+                                                                                                          .primarycolor,
+                                                                                                    ),
+                                                                                                  ],
+                                                                                                ),
+                                                                                                Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment
+                                                                                                      .spaceBetween,
+                                                                                                  children: <
+                                                                                                      Widget>[
+                                                                                                    Text(
+                                                                                                        'Self expression',
+                                                                                                        style: TextStyle(
+                                                                                                            fontFamily: 'font')),
+                                                                                                    new LinearPercentIndicator(
+                                                                                                      width: 140.0,
+                                                                                                      lineHeight: 14.0,
+                                                                                                      percent: ((Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage8with10percent) ==
+                                                                                                          null
+                                                                                                          ? 0
+                                                                                                          : (Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage8with10percent)),
+                                                                                                      center: Text(
+                                                                                                        "${(Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage8with10 ==
+                                                                                                            null
+                                                                                                            ? 0
+                                                                                                            : (Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage8with10))}%",
+                                                                                                        style: new TextStyle(
+                                                                                                            fontSize: 12.0),
+                                                                                                      ),
+                                                                                                      trailing: Icon(
+                                                                                                          Icons
+                                                                                                              .mood),
+                                                                                                      linearStrokeCap: LinearStrokeCap
+                                                                                                          .roundAll,
+                                                                                                      backgroundColor: Colors
+                                                                                                          .grey,
+                                                                                                      progressColor: constants
+                                                                                                          .primarycolor,
+                                                                                                    ),
+                                                                                                  ],
+                                                                                                ),
+                                                                                                Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment
+                                                                                                      .spaceBetween,
+                                                                                                  children: <
+                                                                                                      Widget>[
+                                                                                                    Text(
+                                                                                                        'Enjoyment',
+                                                                                                        style: TextStyle(
+                                                                                                            fontFamily: 'font')),
+                                                                                                    new LinearPercentIndicator(
+                                                                                                      width: 140.0,
+                                                                                                      lineHeight: 14.0,
+                                                                                                      percent: Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage9percent ==
+                                                                                                          null
+                                                                                                          ? 0
+                                                                                                          : Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage9percent,
+                                                                                                      center: Text(
+                                                                                                        "${Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage9 ==
+                                                                                                            null
+                                                                                                            ? 0
+                                                                                                            : Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage9}%",
+                                                                                                        style: new TextStyle(
+                                                                                                            fontSize: 12.0),
+                                                                                                      ),
+                                                                                                      trailing: Icon(
+                                                                                                          Icons
+                                                                                                              .mood),
+                                                                                                      linearStrokeCap: LinearStrokeCap
+                                                                                                          .roundAll,
+                                                                                                      backgroundColor: Colors
+                                                                                                          .grey,
+                                                                                                      progressColor: constants
+                                                                                                          .primarycolor,
+                                                                                                    ),
+                                                                                                  ],
+                                                                                                ),
+                                                                                                Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment
+                                                                                                      .spaceBetween,
+                                                                                                  children: <
+                                                                                                      Widget>[
+                                                                                                    Text(
+                                                                                                        'Acceptance',
+                                                                                                        style: TextStyle(
+                                                                                                            fontFamily: 'font')),
+                                                                                                    new LinearPercentIndicator(
+                                                                                                      width: 140.0,
+                                                                                                      lineHeight: 14.0,
+                                                                                                      percent: Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage11percent ==
+                                                                                                          null
+                                                                                                          ? 0
+                                                                                                          : Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage11percent,
+                                                                                                      center: Text(
+                                                                                                        "${Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage11 ==
+                                                                                                            null
+                                                                                                            ? 0
+                                                                                                            : Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage11}%",
+                                                                                                        style: new TextStyle(
+                                                                                                            fontSize: 12.0),
+                                                                                                      ),
+                                                                                                      trailing: Icon(
+                                                                                                          Icons
+                                                                                                              .mood),
+                                                                                                      linearStrokeCap: LinearStrokeCap
+                                                                                                          .roundAll,
+                                                                                                      backgroundColor: Colors
+                                                                                                          .grey,
+                                                                                                      progressColor: constants
+                                                                                                          .primarycolor,
+                                                                                                    ),
+                                                                                                  ],
+                                                                                                ),
+                                                                                                Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment
+                                                                                                      .spaceBetween,
+                                                                                                  children: <
+                                                                                                      Widget>[
+                                                                                                    Text(
+                                                                                                      'variety',
+                                                                                                      style: TextStyle(
+                                                                                                          fontFamily: 'font'),
+                                                                                                    ),
+                                                                                                    new LinearPercentIndicator(
+                                                                                                      width: 140.0,
+                                                                                                      lineHeight: 14.0,
+                                                                                                      percent: Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage13percent ==
+                                                                                                          null
+                                                                                                          ? 0
+                                                                                                          : Provider
+                                                                                                          .of<
+                                                                                                          Addflagprovider>(
+                                                                                                          context)
+                                                                                                          .valuePrecentage13percent,
+                                                                                                      center: Text(
+                                                                                                        "${Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage13 ==
+                                                                                                            null
+                                                                                                            ? 0
+                                                                                                            : Provider
+                                                                                                            .of<
+                                                                                                            Addflagprovider>(
+                                                                                                            context)
+                                                                                                            .valuePrecentage13}%",
+                                                                                                        style: new TextStyle(
+                                                                                                            fontSize: 12.0),
+                                                                                                      ),
+                                                                                                      trailing: Icon(
+                                                                                                          Icons
+                                                                                                              .mood),
+                                                                                                      linearStrokeCap: LinearStrokeCap
+                                                                                                          .roundAll,
+                                                                                                      backgroundColor: Colors
+                                                                                                          .grey,
+                                                                                                      progressColor: constants
+                                                                                                          .primarycolor,
+                                                                                                    ),
+                                                                                                  ],
                                                                                                 ),
                                                                                               ],
                                                                                             ),
-                                                                                            Row(
-                                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                              children: <Widget>[
-                                                                                                Text('Sense of freedom', style: TextStyle(fontFamily: 'font')),
-                                                                                                new LinearPercentIndicator(
-                                                                                                  width: 140.0,
-                                                                                                  lineHeight: 14.0,
-                                                                                                  percent: ((Provider.of<Addflagprovider>(context).valuePrecentage5with6percent) == null ? 0 : (Provider.of<Addflagprovider>(context).valuePrecentage5with6percent)),
-                                                                                                  center: Text(
-                                                                                                    "${(Provider.of<Addflagprovider>(context).valuePrecentage5with6 == null ? 0 : (Provider.of<Addflagprovider>(context).valuePrecentage5with6))}%",
-                                                                                                    style: new TextStyle(fontSize: 12.0),
-                                                                                                  ),
-                                                                                                  trailing: Icon(Icons.mood),
-                                                                                                  linearStrokeCap: LinearStrokeCap.roundAll,
-                                                                                                  backgroundColor: Colors.grey,
-                                                                                                  progressColor: constants.primarycolor,
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                            Row(
-                                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                              children: <Widget>[
-                                                                                                Text('Safety', style: TextStyle(fontFamily: 'font')),
-                                                                                                new LinearPercentIndicator(
-                                                                                                  width: 140.0,
-                                                                                                  lineHeight: 14.0,
-                                                                                                  percent: Provider.of<Addflagprovider>(context).valuePrecentage7percent == null ? 0 : Provider.of<Addflagprovider>(context).valuePrecentage7percent,
-                                                                                                  center: Text(
-                                                                                                    "${Provider.of<Addflagprovider>(context).valuePrecentage7 == null ? 0 : Provider.of<Addflagprovider>(context).valuePrecentage7}%",
-                                                                                                    style: new TextStyle(fontSize: 12.0),
-                                                                                                  ),
-                                                                                                  trailing: Icon(Icons.mood),
-                                                                                                  linearStrokeCap: LinearStrokeCap.roundAll,
-                                                                                                  backgroundColor: Colors.grey,
-                                                                                                  progressColor: constants.primarycolor,
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                            Row(
-                                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                              children: <Widget>[
-                                                                                                Text('Self expression', style: TextStyle(fontFamily: 'font')),
-                                                                                                new LinearPercentIndicator(
-                                                                                                  width: 140.0,
-                                                                                                  lineHeight: 14.0,
-                                                                                                  percent: ((Provider.of<Addflagprovider>(context).valuePrecentage8with10percent) == null ? 0 : (Provider.of<Addflagprovider>(context).valuePrecentage8with10percent)),
-                                                                                                  center: Text(
-                                                                                                    "${(Provider.of<Addflagprovider>(context).valuePrecentage8with10 == null ? 0 : (Provider.of<Addflagprovider>(context).valuePrecentage8with10))}%",
-                                                                                                    style: new TextStyle(fontSize: 12.0),
-                                                                                                  ),
-                                                                                                  trailing: Icon(Icons.mood),
-                                                                                                  linearStrokeCap: LinearStrokeCap.roundAll,
-                                                                                                  backgroundColor: Colors.grey,
-                                                                                                  progressColor: constants.primarycolor,
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                            Row(
-                                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                              children: <Widget>[
-                                                                                                Text('Enjoyment', style: TextStyle(fontFamily: 'font')),
-                                                                                                new LinearPercentIndicator(
-                                                                                                  width: 140.0,
-                                                                                                  lineHeight: 14.0,
-                                                                                                  percent: Provider.of<Addflagprovider>(context).valuePrecentage9percent == null ? 0 : Provider.of<Addflagprovider>(context).valuePrecentage9percent,
-                                                                                                  center: Text(
-                                                                                                    "${Provider.of<Addflagprovider>(context).valuePrecentage9 == null ? 0 : Provider.of<Addflagprovider>(context).valuePrecentage9}%",
-                                                                                                    style: new TextStyle(fontSize: 12.0),
-                                                                                                  ),
-                                                                                                  trailing: Icon(Icons.mood),
-                                                                                                  linearStrokeCap: LinearStrokeCap.roundAll,
-                                                                                                  backgroundColor: Colors.grey,
-                                                                                                  progressColor: constants.primarycolor,
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                            Row(
-                                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                              children: <Widget>[
-                                                                                                Text('Acceptance', style: TextStyle(fontFamily: 'font')),
-                                                                                                new LinearPercentIndicator(
-                                                                                                  width: 140.0,
-                                                                                                  lineHeight: 14.0,
-                                                                                                  percent: Provider.of<Addflagprovider>(context).valuePrecentage11percent == null ? 0 : Provider.of<Addflagprovider>(context).valuePrecentage11percent,
-                                                                                                  center: Text(
-                                                                                                    "${Provider.of<Addflagprovider>(context).valuePrecentage11 == null ? 0 : Provider.of<Addflagprovider>(context).valuePrecentage11}%",
-                                                                                                    style: new TextStyle(fontSize: 12.0),
-                                                                                                  ),
-                                                                                                  trailing: Icon(Icons.mood),
-                                                                                                  linearStrokeCap: LinearStrokeCap.roundAll,
-                                                                                                  backgroundColor: Colors.grey,
-                                                                                                  progressColor: constants.primarycolor,
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                            Row(
-                                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                              children: <Widget>[
-                                                                                                Text(
-                                                                                                  'variety',
-                                                                                                  style: TextStyle(fontFamily: 'font'),
-                                                                                                ),
-                                                                                                new LinearPercentIndicator(
-                                                                                                  width: 140.0,
-                                                                                                  lineHeight: 14.0,
-                                                                                                  percent: Provider.of<Addflagprovider>(context).valuePrecentage13percent == null ? 0 : Provider.of<Addflagprovider>(context).valuePrecentage13percent,
-                                                                                                  center: Text(
-                                                                                                    "${Provider.of<Addflagprovider>(context).valuePrecentage13 == null ? 0 : Provider.of<Addflagprovider>(context).valuePrecentage13}%",
-                                                                                                    style: new TextStyle(fontSize: 12.0),
-                                                                                                  ),
-                                                                                                  trailing: Icon(Icons.mood),
-                                                                                                  linearStrokeCap: LinearStrokeCap.roundAll,
-                                                                                                  backgroundColor: Colors.grey,
-                                                                                                  progressColor: constants.primarycolor,
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                          ],
-                                                                                        ),
-                                                                                      )),
-                                                                                ),
-                                                                              )
-                                                                            ],
-                                                                          ),
-                                                                        ),
-                                                                      ));
-                                                                } else
-                                                                  return Center(
-                                                                      child: Text(
-                                                                          'loading...',
-                                                                          style: TextStyle(
-                                                                              fontFamily:
-                                                                              'font')));
-                                                              });
-                                                  });
-                                            });
-                                      },
-                                      child: Text(
-                                        "See More",
-                                        style: TextStyle(
-                                            fontFamily: 'font',
-                                            decoration: TextDecoration.underline,
-                                            color: constants.orange),
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              )),
-                        );
-                      });
-                } else if (snapshot.data == null) {
-                  print(snapshot.data);
-                  return Center(
-                    child: Text(
-                      "No Fav Yet...",
-                      style: TextStyle(fontFamily: 'font'),
-                    ),
-                  );
-                } else if (snapshot.hasData) {
-                  print(snapshot.data);
-                } else if (snapshot.connectionState == ConnectionState.none) {
-                  return Center(child: Text('Error'));
+                                                                                          )),
+                                                                                    ),
+                                                                                  )
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                          ));
+                                                                    } else
+                                                                      return Center(
+                                                                          child: Text(
+                                                                              'loading...',
+                                                                              style: TextStyle(
+                                                                                  fontFamily:
+                                                                                  'font')));
+                                                                  });
+                                                            });
+                                                      });
+                                                },
+                                                child: Text(
+                                                  "See More",
+                                                  style: TextStyle(
+                                                      fontFamily: 'font',
+                                                      decoration: TextDecoration
+                                                          .underline,
+                                                      color: constants.orange),
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        )),
+                                  );
+                                });
+                          } else if (snapshot.data == null) {
+                            print(snapshot.data);
+                            return Center(
+                              child: Text(
+                                "No Fav Yet...",
+                                style: TextStyle(fontFamily: 'font'),
+                              ),
+                            );
+                          } else if (snapshot.hasData) {
+                            print(snapshot.data);
+                          } else if (snapshot.connectionState ==
+                              ConnectionState.none) {
+                            return Center(child: Text('Error'));
+                          }
+                          return Center(
+                            child: Text(
+                              "Loding...",
+                              style: TextStyle(fontFamily: 'font'),
+                            ),
+                          );
+                        }
+                    );
                 }
-                return Center(
-                  child: Text(
-                    "Loding...",
-                    style: TextStyle(fontFamily: 'font'),
-                  ),
-                );
-              })),
+
+              else
+                return Text("Loading...");
+            }
+          )
+    ),
     );
   }
   getCartTotal(String docId) async {

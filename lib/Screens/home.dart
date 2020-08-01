@@ -93,6 +93,7 @@ class _homeState extends State<home> {
 
   @override
   void initState() {
+    getUser();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (Provider.of<UserProvider>(context, listen: false).scores3 != 0&&Provider.of<UserProvider>(context, listen: false).scores3 != null) {
         await showDialog<String>(
@@ -150,6 +151,13 @@ class _homeState extends State<home> {
     });
     sharedpref();
   }
+  getUser()async{
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    setState(() {
+      user1 = user;
+    });
+  }
+  FirebaseUser user1;
 
   double counter;
   bool clickable;
@@ -215,56 +223,23 @@ class _homeState extends State<home> {
                                 isScrollControlled: true,
                                 context: context,
                                 builder: (builder) {
-                                  if(data==null)
-                                    return CircularProgressIndicator();
+
                                   return StreamBuilder(
                                       stream: store.MarkersCommentStream(
-                                          doc.documentID.toString()),
+                                          doc.documentID.toString()
+
+                                      ),
                                       builder: (context, snapshot) {
-                                        List<MarkerComments>   markercomments = [];
-                                     var datacomment= snapshot.data.documents;
                                        if (snapshot.hasData) {
-                                         for (var doc2
-                                         in snapshot.data.documents) {
-                                           var data6 = doc2.data;
-                                           markercomments.add(MarkerComments(
-                                             data6[constants.uid],
-                                             data6[constants.Question1],
-                                             data6[constants.Question2],
-                                             data6[constants.time],
-                                             data6[constants.Question3],
-                                             data6[constants.Question4],
-                                             data6[constants.Question5],
-                                             data6[constants.Question6],
-                                             data6[constants.Question7],
-                                             data6[constants.Question8],
-                                             data6[constants.Question9],
-                                             data6[constants.Question10],
-                                             data6[constants.Question11],
-                                             data6[constants.Question12],
-                                             data6[constants.Question13],
-                                             data6[constants.placeRate],
-                                             data6[constants.Value4],
-                                             data6[constants.Value5],
-                                             data6[constants.Value6],
-                                             data6[constants.Value7],
-                                             data6[constants.Value8],
-                                             data6[constants.Value9],
-                                             data6[constants.Value10],
-                                             data6[constants.Value11],
-                                             data6[constants.Value12],
-                                             data6[constants.Value13],
-                                           ));
-                                         }
+
+
                                          getCartTotal(
                                              doc.documentID.toString());
-                                        if (snapshot.data==null){
-                                          return CircularProgressIndicator();
-                                        }
+
                                          return StreamBuilder(
                                              stream: store.favouriteLike(
-
-                                                 markercomments[0].owneruid),
+                                                   user1.uid
+                                                 ),
                                              builder: (context, snapshot) {
                                                if (snapshot.hasData) {
                                                  return Container(
@@ -371,7 +346,7 @@ class _homeState extends State<home> {
                                                              LocationStack(
                                                                height: height,
                                                                width: width,
-                                                               data: data,
+                                                               placImage: data[constants.PlaceImage],
                                                                urlLoad: urlLoad,
                                                                docId: doc
                                                                    .documentID
