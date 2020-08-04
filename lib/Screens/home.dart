@@ -8,41 +8,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:googlemaps/Provider/AddFlagProvider.dart';
 import 'package:googlemaps/Provider/UserProvider.dart';
-import 'package:googlemaps/Provider/modelHud.dart';
 import 'package:googlemaps/Screens/addflag.dart';
-import 'package:firebase_storage/firebase_storage.dart'; // For File Upload To Firestore
 import 'package:googlemaps/Widgets/LocationStack.dart';
-import 'package:googlemaps/Widgets/pickImageDialog.dart';
-import 'package:image_picker/image_picker.dart'; // For Image Picker
-
 import 'package:googlemaps/Screens/favorite.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:googlemaps/Screens/profile.dart';
 import 'package:googlemaps/Screens/addQuestions.dart';
-import 'package:googlemaps/Widgets/Seaarch_weidget.dart';
 import 'package:googlemaps/Widgets/home_user_pointes.dart';
 import 'package:googlemaps/constants.dart';
 import 'package:googlemaps/custom_icons/custom_icons.dart';
-import 'package:googlemaps/models/Markers.dart';
-import 'package:like_button/like_button.dart';
-import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:googlemaps/servecies/store.dart';
-import 'package:googlemaps/Screens/waitingWidget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class home extends StatefulWidget {
+  static String id = "home";
   @override
   _homeState createState() => _homeState();
-  static String id = "home";
+
 }
 
 class _homeState extends State<home> {
@@ -62,7 +50,7 @@ class _homeState extends State<home> {
   }
 
   int currentindex = 0;
-  Position position;
+
   double lat, long;
   BitmapDescriptor markericon;
 
@@ -82,14 +70,6 @@ class _homeState extends State<home> {
 //        "images/marker.png");
 //  }
 
-  getposition() async {
-    position = await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    setState(() {
-      lat = position.latitude;
-      long = position.longitude;
-    });
-  }
 
   @override
   void initState() {
@@ -188,6 +168,7 @@ class _homeState extends State<home> {
     return Material(
       child: Scaffold(
         appBar: AppBar(
+          leading: Container(),
           elevation: 1,
           centerTitle: true,
           backgroundColor: constants.whitecolor,
@@ -896,7 +877,7 @@ class _homeState extends State<home> {
                                 child: Row(
                                   children: <Widget>[
                                     Positioned(
-                                      bottom: height * 0.1,
+                                      bottom: height * 0.05,
                                       left: width * 0.04,
                                       child: IgnorePointer(
                                         ignoring: clickable == null

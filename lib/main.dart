@@ -6,6 +6,7 @@ import 'package:googlemaps/Provider/modelHud.dart';
 import 'package:googlemaps/Screens/Splash_Screen.dart';
 import 'package:googlemaps/Screens/addflag.dart';
 import 'package:googlemaps/Screens/home.dart';
+import 'package:googlemaps/Screens/introSlider.dart';
 import 'package:googlemaps/Screens/loginScreen.dart';
 import 'package:googlemaps/Screens/signup.dart';
 import 'package:googlemaps/Screens/waitingWidget.dart';
@@ -28,6 +29,7 @@ void main() => runApp(MultiProvider(
       child: MaterialApp(
         home: Phoenix(child: Splash_Screen()),
         routes: {
+          introSlider.introid:(context)=>introSlider(),
           Splash_Screen.id:(context)=>Splash_Screen(),
           addflag.id: (context) => addflag(),
           waitngWidget.id: (context) => waitngWidget(),

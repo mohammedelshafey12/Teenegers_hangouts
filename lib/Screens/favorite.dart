@@ -234,7 +234,8 @@ class _favoriteState extends State<favorite> {
                                                                                         builder: (
                                                                                             context) =>
                                                                                             addQuestions(
-                                                                                                doc.documentID.toString())));
+                                                                                                data2[index][constants
+                                                                                                    .time])));
                                                                               },
                                                                               label: Text(
                                                                                   "Add Your Answers now!"),
@@ -746,7 +747,7 @@ class _favoriteState extends State<favorite> {
                           }
                           return Center(
                             child: Text(
-                              "Loding...",
+                              "Loading...",
                               style: TextStyle(fontFamily: 'font'),
                             ),
                           );
@@ -755,7 +756,12 @@ class _favoriteState extends State<favorite> {
                 }
 
               else
-                return Text("Loading...");
+                return  Center(
+                  child: Text(
+                    "Loading...",
+                    style: TextStyle(fontFamily: 'font'),
+                  ),
+                );
             }
           )
     ),

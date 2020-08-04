@@ -170,7 +170,7 @@ class home_user_pointes extends StatelessWidget {
             ),
           );
         }else
-          return Center(child:Text("Loading...."));
+          return Center(child:Text("Loading....",style: TextStyle(fontFamily: 'font'),));
 
       }
     );
