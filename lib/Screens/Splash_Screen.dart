@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:googlemaps/Screens/introSlider.dart';
 import 'package:googlemaps/Widgets/customtext.dart';
 import 'package:googlemaps/constants.dart';
 import 'package:googlemaps/Screens/waitingWidget.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Splash_Screen extends StatefulWidget {
   static String id = 'splashid';
@@ -17,15 +19,20 @@ class Splash extends State<Splash_Screen> {
   @override
   void initState() {
     super.initState();
+    sharedpref();
   }
-
+  double counter;
+  sharedpref() async {
+    final prefs = await SharedPreferences.getInstance();
+    counter = prefs.getDouble('Introcounter') ;
+  }
   @override
   Widget build(BuildContext context) {
     Timer(
         Duration(seconds: 3),
         () => Navigator.of(context).pushReplacement(MaterialPageRoute(
 
-            builder: (BuildContext context) => waitngWidget())));
+            builder: (BuildContext context) => counter==1?waitngWidget():introSlider())));
 
     var assetsImage = new AssetImage(
         'images/new_logo.png'); //<- Creates an object that fetches an image.
