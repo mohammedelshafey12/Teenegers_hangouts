@@ -799,8 +799,6 @@ class _homeState extends State<home> {
                                       onMapCreated: _OnMapCreated,
                                       initialCameraPosition: CameraPosition(
                                           target: _lastMapPosition, zoom: 15),
-                                      myLocationButtonEnabled: true,
-                                      myLocationEnabled: true,
                                     ),
                                   ),
                                 ),
@@ -822,7 +820,7 @@ class _homeState extends State<home> {
                                           await PlacesAutocomplete.show(
                                               context: context,
                                               apiKey: constants.kGoogleApiKey,
-                                              mode: Mode.overlay,
+                                              mode: Mode.fullscreen,
                                               // Mode.fullscreen
                                               language: "Ar",
                                               onError: (e) {
