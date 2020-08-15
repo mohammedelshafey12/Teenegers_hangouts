@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:flutter_login_facebook/flutter_login_facebook.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googlemaps/models/user.dart';
 
@@ -17,7 +17,7 @@ class Auth {
   Future<AuthResult> sign_in_with_email_and_password(
       String Email, String Password) async {
     final authresult =
-        await _auth.signInWithEmailAndPassword(email: Email, password: Password);
+    await _auth.signInWithEmailAndPassword(email: Email, password: Password);
     return authresult;
   }
   final GoogleSignIn googleSignIn = GoogleSignIn();
@@ -31,13 +31,13 @@ class Auth {
 //
 //  }
 
- Future signout() async{
-try{
-  return await _auth.signOut();
-}catch (e){
-  print(e.toString());
-}
- }
+  Future signout() async{
+    try{
+      return await _auth.signOut();
+    }catch (e){
+      print(e.toString());
+    }
+  }
   void signOutGoogle() async{
     await googleSignIn.signOut();
 

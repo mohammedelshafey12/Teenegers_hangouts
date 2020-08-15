@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_login_facebook/flutter_login_facebook.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googlemaps/Provider/UserProvider.dart';
@@ -7,7 +8,6 @@ import 'package:googlemaps/Screens/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:googlemaps/Provider/modelHud.dart';
 import 'package:googlemaps/Screens/signup.dart';
@@ -31,7 +31,7 @@ class loginScreen extends StatefulWidget {
 class _loginScreenState extends State<loginScreen> {
   final _auth = Auth();
 
-final auth1  = FirebaseAuth.instance;
+  final auth1  = FirebaseAuth.instance;
 
   String _email, _password;
 
@@ -94,11 +94,11 @@ final auth1  = FirebaseAuth.instance;
                           child: Center(
                             child: Container(
                                 child: customText(
-                              text: "Your Way ",
-                              fontWeight: FontWeight.normal,
-                              textcolor: constants.blackcolor,
-                              size: 13,
-                            )),
+                                  text: "Your Way ",
+                                  fontWeight: FontWeight.normal,
+                                  textcolor: constants.blackcolor,
+                                  size: 13,
+                                )),
                           ),
                         ),
                         //text
@@ -106,12 +106,12 @@ final auth1  = FirebaseAuth.instance;
                           padding: const EdgeInsets.symmetric(vertical: 20),
                           child: Center(
                               child: FittedBox(
-                            child: customText(
-                                fontWeight: FontWeight.bold,
-                                textcolor: constants.blackcolor,
-                                size: 20,
-                                text: "Find new place \n        now!"),
-                          )),
+                                child: customText(
+                                    fontWeight: FontWeight.bold,
+                                    textcolor: constants.blackcolor,
+                                    size: 20,
+                                    text: "Find new place \n        now!"),
+                              )),
                         ),
                         //custom text field for username
                         Padding(
@@ -155,7 +155,7 @@ final auth1  = FirebaseAuth.instance;
                                   try {
                                     final authResult = await _auth
                                         .sign_in_with_email_and_password(
-                                            _email.trim(), _password.trim());
+                                        _email.trim(), _password.trim());
 
                                     modelhud.isprogressloding(false);
                                     Navigator.pushNamed(context, waitngWidget.id);
@@ -183,11 +183,11 @@ final auth1  = FirebaseAuth.instance;
                         ),
                         Center(
                             child: customText(
-                          text: "Or Login With",
-                          size: 16,
-                          textcolor: constants.blackcolor,
-                          fontWeight: FontWeight.normal,
-                        )),
+                              text: "Or Login With",
+                              size: 16,
+                              textcolor: constants.blackcolor,
+                              fontWeight: FontWeight.normal,
+                            )),
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 20),
                           child: Row(
@@ -197,7 +197,7 @@ final auth1  = FirebaseAuth.instance;
                                 onTap:() async {
                                   Store store = Store();
                                   UserProvider userprovider = Provider.of<UserProvider>(context,listen: false);
-                                  FacebookLoginResult facebookLoginResult = await facebookLogin.logIn(['email','public_profile']);
+                                  FacebookLoginResult facebookLoginResult = await facebookLogin.logIn();
 
                                   final FacebookAccessToken accessToken = facebookLoginResult.accessToken;
 
@@ -206,7 +206,7 @@ final auth1  = FirebaseAuth.instance;
                                   FirebaseUser user;
                                   try{
                                     user = (await auth1.signInWithCredential(authCredential)).user;
-                                     userprovider.getaccesstoken(accessToken.token);
+                                    userprovider.getaccesstoken(accessToken.token);
 
                                     final DocumentSnapshot doc =
                                     await Firestore.instance.collection(constants.usercollection).document(accessToken.token).get();
@@ -218,21 +218,21 @@ final auth1  = FirebaseAuth.instance;
 
                                     Navigator.pushNamed(context, waitngWidget.id);
                                   }catch(e){
-                                  print(e.toString());
+                                    print(e.toString());
                                   }finally{
-                                  if(user != null){
-                                    print(user.displayName);
-                                    print("https://graph.facebook.com/v2.12/me?fields=picture.height(200)&access_token=${facebookLoginResult.accessToken.token}");
-                                    print(user.phoneNumber);
-                                    print(user.email);
+                                    if(user != null){
+                                      print(user.displayName);
+                                      print("https://graph.facebook.com/v2.12/me?fields=picture.height(200)&access_token=${facebookLoginResult.accessToken.token}");
+                                      print(user.phoneNumber);
+                                      print(user.email);
 
 
-                                  // ignore: missing_return
-                                  }
+                                      // ignore: missing_return
+                                    }
                                   }
                                 }
 
-                                  ,
+                                ,
                                 child: Container(
                                     width: width * 0.4,
                                     height: height * 0.07,
@@ -255,7 +255,7 @@ final auth1  = FirebaseAuth.instance;
                                     final GoogleSignIn googleSignIn = GoogleSignIn();
                                     final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
                                     final GoogleSignInAuthentication googleSignInAuthentication =
-                                        await googleSignInAccount.authentication;
+                                    await googleSignInAccount.authentication;
 
                                     final AuthCredential credential = GoogleAuthProvider.getCredential(
                                       accessToken: googleSignInAuthentication.accessToken,
@@ -319,13 +319,13 @@ final auth1  = FirebaseAuth.instance;
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Center(
                                 child: Text(
-                              "Sign Up",
-                              style: TextStyle(
-                                  fontFamily: 'font',
-                                  decoration: TextDecoration.underline,
-                                  fontSize: 16,
-                                  color: constants.blackcolor),
-                            )),
+                                  "Sign Up",
+                                  style: TextStyle(
+                                      fontFamily: 'font',
+                                      decoration: TextDecoration.underline,
+                                      fontSize: 16,
+                                      color: constants.blackcolor),
+                                )),
                           ),
                         )
                       ],
